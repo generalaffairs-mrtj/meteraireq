@@ -38,6 +38,7 @@ CREATE TABLE public.requests (
     tujuan_penggunaan TEXT         NOT NULL,
     status            VARCHAR(50)  NOT NULL DEFAULT 'Belum Dikonfirmasi',
     keterangan        TEXT,
+    stock_deducted    BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at        TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at        TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     CONSTRAINT chk_status   CHECK (status IN ('Belum Dikonfirmasi','Sedang Disiapkan','Tersedia','Ditolak','Selesai')),
@@ -182,21 +183,97 @@ LANGUAGE plpgsql
 SECURITY INVOKER
 AS $$
 DECLARE
-    v_row public.requests;
+    v_row          public.requests;
+    v_old_status   TEXT;
+    v_old_deducted BOOLEAN;
+    v_stock_now    INTEGER;
 BEGIN
     IF p_keterangan IS NULL OR length(trim(p_keterangan)) = 0 THEN
         RAISE EXCEPTION 'Keterangan wajib diisi saat update status';
     END IF;
 
-    UPDATE public.requests
-    SET status     = p_status,
-        keterangan = trim(p_keterangan)
+    IF p_status NOT IN ('Belum Dikonfirmasi','Sedang Disiapkan','Tersedia','Ditolak','Selesai') THEN
+        RAISE EXCEPTION 'Status tidak valid: %', p_status;
+    END IF;
+
+    -- Lock the request row to prevent concurrent updates
+    SELECT * INTO v_row
+    FROM public.requests
     WHERE kode_permintaan = p_kode
-    RETURNING * INTO v_row;
+    FOR UPDATE;
 
     IF v_row.id IS NULL THEN
         RAISE EXCEPTION 'Kode permintaan % tidak ditemukan', p_kode;
     END IF;
+
+    v_old_status   := v_row.status;
+    v_old_deducted := v_row.stock_deducted;
+
+    -- ---- CASE A: status berubah MENJADI 'Selesai' (dan belum pernah dikurangi) ----
+    IF p_status = 'Selesai' AND NOT v_old_deducted THEN
+        -- Lock stok di lokasi terkait
+        SELECT jumlah INTO v_stock_now
+        FROM public.stock
+        WHERE area = v_row.lokasi_kerja
+        FOR UPDATE;
+
+        IF v_stock_now IS NULL THEN
+            RAISE EXCEPTION 'Stok untuk lokasi % tidak ditemukan', v_row.lokasi_kerja;
+        END IF;
+
+        IF v_stock_now < v_row.jumlah_meterai THEN
+            RAISE EXCEPTION 'Stok tidak cukup di %. Tersedia: %, dibutuhkan: %',
+                v_row.lokasi_kerja, v_stock_now, v_row.jumlah_meterai;
+        END IF;
+
+        UPDATE public.stock
+        SET jumlah = jumlah - v_row.jumlah_meterai
+        WHERE area = v_row.lokasi_kerja;
+
+        INSERT INTO public.stock_log (area, perubahan, stok_sebelum, stok_sesudah, tipe, keterangan)
+        VALUES (
+            v_row.lokasi_kerja,
+            -v_row.jumlah_meterai,
+            v_stock_now,
+            v_stock_now - v_row.jumlah_meterai,
+            'KURANG',
+            'Auto: permintaan ' || v_row.kode_permintaan || ' (' || v_row.nama_pemohon || ') diselesaikan'
+        );
+
+        v_row.stock_deducted := TRUE;
+    END IF;
+
+    -- ---- CASE B: status berubah DARI 'Selesai' ke status lain (rollback stok) ----
+    IF v_old_status = 'Selesai' AND p_status <> 'Selesai' AND v_old_deducted THEN
+        SELECT jumlah INTO v_stock_now
+        FROM public.stock
+        WHERE area = v_row.lokasi_kerja
+        FOR UPDATE;
+
+        UPDATE public.stock
+        SET jumlah = jumlah + v_row.jumlah_meterai
+        WHERE area = v_row.lokasi_kerja;
+
+        INSERT INTO public.stock_log (area, perubahan, stok_sebelum, stok_sesudah, tipe, keterangan)
+        VALUES (
+            v_row.lokasi_kerja,
+            v_row.jumlah_meterai,
+            v_stock_now,
+            v_stock_now + v_row.jumlah_meterai,
+            'TAMBAH',
+            'Rollback: permintaan ' || v_row.kode_permintaan || ' status diubah dari Selesai ke ' || p_status
+        );
+
+        v_row.stock_deducted := FALSE;
+    END IF;
+
+    -- Update status, keterangan, dan flag stock_deducted dalam satu UPDATE
+    UPDATE public.requests
+    SET status         = p_status,
+        keterangan     = trim(p_keterangan),
+        stock_deducted = v_row.stock_deducted
+    WHERE kode_permintaan = p_kode
+    RETURNING * INTO v_row;
 
     RETURN v_row;
 END;

@@ -741,7 +741,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="brand">
         <div class="brand-mark">M</div>
         <div class="brand-text-wrap">
-          <span class="brand-text">Meterai Request</span>
+          <span class="brand-text">Permintaan Meterai</span>
           <span class="brand-sub">General Affairs Department</span>
         </div>
       </div>
@@ -752,7 +752,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
         <a href="#cara"       class="nav-link">Cara Pakai</a>
         <button class="btn btn-outline btn-sm" onclick="ui.openLogin()">
           <span class="material-symbols-rounded icon-sm">admin_panel_settings</span>
-          <span>Login</span>
+          <span>Admin</span>
         </button>
       </nav>
     </div>
@@ -761,7 +761,12 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
   <!-- HERO -->
   <section class="hero">
     <div class="container hero-inner">
-      <h1>Ajukan. Lacak. Gunakan.<br><span class="accent">Mudah dan cepat</span></h1>
+      <span class="hero-badge">
+        <span class="material-symbols-rounded icon-sm icon-fill">verified</span>
+        Platform Resmi General Affairs
+      </span>
+      <h1>Ajukan permintaan meterai <span class="accent">cepat &amp; transparan</span></h1>
+      <p>Kelola kebutuhan meterai unit kerja Anda dalam satu platform. Pantau status permintaan secara real-time dengan kode unik tracking.</p>
       <div class="hero-cta">
         <a href="#permintaan" class="btn btn-primary btn-lg">
           <span class="material-symbols-rounded">edit_document</span>
@@ -780,7 +785,8 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
     <div class="container">
       <div class="section-head">
         <span class="section-eyebrow">Statistik</span>
-        <h2 class="section-title">Ringkasan Pengajuan</h2>
+        <h2 class="section-title">Ringkasan Aktivitas</h2>
+        <p class="section-desc">Data real-time permintaan meterai dari seluruh unit kerja.</p>
       </div>
 
       <div class="stats-grid" style="margin-bottom:24px;">
@@ -909,7 +915,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="section-head">
         <span class="section-eyebrow">Tracking</span>
         <h2 class="section-title">Lacak Permintaan Anda</h2>
-        <p class="section-desc">Masukkan kode permintaan untuk mengetahui status pengajuan Anda!</p>
+        <p class="section-desc">Masukkan kode permintaan untuk mengetahui status terkini.</p>
       </div>
 
       <div class="tracking-wrap">
@@ -966,6 +972,13 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="container">
+      <div class="brand">
+        <div class="brand-mark">M</div>
+        <div class="brand-text-wrap">
+          <span class="brand-text">Permintaan Meterai</span>
+          <span class="brand-sub">General Affairs Department</span>
+        </div>
+      </div>
       <div>&copy; General Affairs Department - 2026</div>
     </div>
   </footer>
@@ -1235,9 +1248,10 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
         <label>Pemohon</label>
         <input type="text" class="input readonly" id="status-pemohon" readonly />
       </div>
+      <div id="status-stock-info" style="display:none; padding:12px 14px; border-radius:10px; margin-bottom:14px; font-size:13px; line-height:1.5;"></div>
       <div class="field" style="margin-bottom:14px;">
         <label>Status <span class="req">*</span></label>
-        <select id="status-value" class="select" required>
+        <select id="status-value" class="select" required onchange="admin.onStatusChange()">
           <option>Belum Dikonfirmasi</option>
           <option>Sedang Disiapkan</option>
           <option>Tersedia</option>
@@ -1307,8 +1321,8 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
 /* ============================================================
    SUPABASE CONFIG  ←  GANTI DUA NILAI INI DENGAN PROYEK ANDA
    ============================================================ */
-const SUPABASE_URL  = 'https://hfwwfoceaduytiaevnay.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhmd3dmb2NlYWR1eXRpYWV2bmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjA4NjcsImV4cCI6MjA5MzczNjg2N30.Wkx9O6OF_q4mDCjldvGTV6nUC4SERiOp-Ot2hMKKbuw';
+const SUPABASE_URL  = 'https://YOUR-PROJECT-ID.supabase.co';
+const SUPABASE_ANON = 'YOUR-ANON-PUBLIC-KEY';
 /* ============================================================ */
 
 const sb = (typeof supabase !== 'undefined')
@@ -1880,14 +1894,82 @@ const admin = {
     $('#status-pemohon').value   = `${r.nama_pemohon} · ${r.departemen}`;
     $('#status-value').value     = r.status || 'Belum Dikonfirmasi';
     $('#status-keterangan').value= r.keterangan || '';
+    // Reset & fetch stock info
+    const info = $('#status-stock-info');
+    info.style.display = 'none';
+    info.innerHTML = '';
+    this.fetchStockForRequest(r);
     ui.openModal('modal-status');
   },
+
+  async fetchStockForRequest(r){
+    if (!sb) return;
+    try{
+      const { data, error } = await sb.from('stock')
+        .select('jumlah,minimum')
+        .eq('area', r.lokasi_kerja)
+        .maybeSingle();
+      if (error) throw error;
+      this.state.editingStock = data ? data.jumlah : 0;
+      this.renderStockInfo();
+    }catch(err){ console.error('fetch stock failed', err); }
+  },
+
+  renderStockInfo(){
+    const r = this.state.editingRequest; if (!r) return;
+    const info = $('#status-stock-info');
+    const stock = this.state.editingStock ?? 0;
+    const need  = r.jumlah_meterai;
+    const status = $('#status-value').value;
+    const isCompleting = status === 'Selesai' && r.status !== 'Selesai';
+    const isRollback   = status !== 'Selesai' && r.status === 'Selesai';
+
+    let bg='#EFF6FF', border='#BFDBFE', color='#1E40AF', icon='inventory_2', msg='';
+
+    if (r.stock_deducted){
+      msg = `<b>Stok untuk permintaan ini sudah dikurangi.</b><br>Lokasi: ${r.lokasi_kerja} · Stok saat ini: <b>${stock}</b> lembar.`;
+      if (isRollback){
+        bg='#FEF3C7'; border='#FCD34D'; color='#92400E'; icon='undo';
+        msg = `<b>Rollback stok akan dilakukan.</b><br>${r.jumlah_meterai} lembar akan dikembalikan ke <b>${r.lokasi_kerja}</b> (saat ini ${stock} → ${stock + need}).`;
+      }
+    } else if (isCompleting){
+      if (stock < need){
+        bg='#FEE2E2'; border='#FCA5A5'; color='#991B1B'; icon='error';
+        msg = `<b>Stok tidak cukup!</b><br>Lokasi <b>${r.lokasi_kerja}</b> hanya punya <b>${stock}</b> lembar, dibutuhkan <b>${need}</b>. Tambah stok dulu sebelum menyelesaikan.`;
+      } else {
+        bg='#DCFCE7'; border='#86EFAC'; color='#166534'; icon='check_circle';
+        msg = `<b>Stok akan dikurangi otomatis.</b><br>Lokasi <b>${r.lokasi_kerja}</b>: ${stock} → <b>${stock - need}</b> lembar (kurang ${need}).`;
+      }
+    } else {
+      msg = `Lokasi: <b>${r.lokasi_kerja}</b> · Permintaan: <b>${need}</b> lembar · Stok tersedia: <b>${stock}</b> lembar.`;
+    }
+
+    info.style.background = bg;
+    info.style.border = `1px solid ${border}`;
+    info.style.color = color;
+    info.innerHTML = `<div style="display:flex; gap:10px; align-items:flex-start;">
+      <span class="material-symbols-rounded" style="font-size:20px; flex-shrink:0;">${icon}</span>
+      <div>${msg}</div>
+    </div>`;
+    info.style.display = 'block';
+  },
+
+  onStatusChange(){ this.renderStockInfo(); },
 
   async saveStatus(){
     const r = this.state.editingRequest; if (!r) return;
     const status = $('#status-value').value;
     const ket    = $('#status-keterangan').value.trim();
     if (!ket){ toast('Keterangan wajib diisi','warning'); $('#status-keterangan').focus(); return; }
+
+    // Client-side guard: warn if marking Selesai with insufficient stock
+    if (status === 'Selesai' && !r.stock_deducted){
+      const stock = this.state.editingStock ?? 0;
+      if (stock < r.jumlah_meterai){
+        toast(`Stok tidak cukup di ${r.lokasi_kerja}. Tersedia ${stock}, butuh ${r.jumlah_meterai}.`, 'error', 6000);
+        return;
+      }
+    }
 
     const btn = $('#btn-save-status'); const orig = btn.innerHTML;
     btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Menyimpan…</span>';
@@ -1896,12 +1978,22 @@ const admin = {
         p_kode: r.kode_permintaan, p_status: status, p_keterangan: ket
       });
       if (error) throw error;
-      toast('Status berhasil diperbarui','success');
+      // Beri pesan kontekstual sesuai aksi yang terjadi
+      if (status === 'Selesai' && !r.stock_deducted){
+        toast(`Status diperbarui — stok ${r.lokasi_kerja} berkurang ${r.jumlah_meterai} lembar`,'success', 4000);
+      } else if (status !== 'Selesai' && r.stock_deducted){
+        toast(`Status diperbarui — stok ${r.lokasi_kerja} dikembalikan ${r.jumlah_meterai} lembar`,'success', 4000);
+      } else {
+        toast('Status berhasil diperbarui','success');
+      }
       ui.closeModal('modal-status');
+      // Refresh seluruh data: dashboard, requests, stock — agar selalu sinkron
       this.refresh();
+      this.loadDashboard();
+      this.loadStockSection();
     }catch(err){
       console.error(err);
-      toast('Gagal: ' + (err.message||''), 'error', 5000);
+      toast('Gagal: ' + (err.message||''), 'error', 6000);
     }finally{
       btn.disabled = false; btn.innerHTML = orig;
     }
