@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=bar_chart_4_bars" />  
 
 <!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -741,7 +742,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="brand">
         <div class="brand-mark">M</div>
         <div class="brand-text-wrap">
-          <span class="brand-text">Permintaan Meterai</span>
+          <span class="brand-text">Meterai Request</span>
           <span class="brand-sub">General Affairs Department</span>
         </div>
       </div>
@@ -752,7 +753,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
         <a href="#cara"       class="nav-link">Cara Pakai</a>
         <button class="btn btn-outline btn-sm" onclick="ui.openLogin()">
           <span class="material-symbols-rounded icon-sm">admin_panel_settings</span>
-          <span>Admin</span>
+          <span>Login</span>
         </button>
       </nav>
     </div>
@@ -761,12 +762,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
   <!-- HERO -->
   <section class="hero">
     <div class="container hero-inner">
-      <span class="hero-badge">
-        <span class="material-symbols-rounded icon-sm icon-fill">verified</span>
-        Platform Resmi General Affairs
-      </span>
-      <h1>Ajukan permintaan meterai <span class="accent">cepat &amp; transparan</span></h1>
-      <p>Kelola kebutuhan meterai unit kerja Anda dalam satu platform. Pantau status permintaan secara real-time dengan kode unik tracking.</p>
+      <h1>Pengajuan Meterai <span class="accent">General Affairs</span></h1>
       <div class="hero-cta">
         <a href="#permintaan" class="btn btn-primary btn-lg">
           <span class="material-symbols-rounded">edit_document</span>
@@ -786,12 +782,11 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="section-head">
         <span class="section-eyebrow">Statistik</span>
         <h2 class="section-title">Ringkasan Aktivitas</h2>
-        <p class="section-desc">Data real-time permintaan meterai dari seluruh unit kerja.</p>
       </div>
 
       <div class="stats-grid" style="margin-bottom:24px;">
         <div class="stat-card blue">
-          <div class="stat-icon"><span class="material-symbols-rounded icon-fill">stamp</span></div>
+          <div class="stat-icon"><span class="material-symbols-outlined">bar_chart_4_bars</span></div>
           <div class="stat-label">Total Meterai Keluar</div>
           <div class="stat-value" id="stat-total-keluar">—</div>
           <div class="stat-meta">Status “Selesai” akumulatif</div>
@@ -972,13 +967,6 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
   <!-- FOOTER -->
   <footer class="site-footer">
     <div class="container">
-      <div class="brand">
-        <div class="brand-mark">M</div>
-        <div class="brand-text-wrap">
-          <span class="brand-text">Permintaan Meterai</span>
-          <span class="brand-sub">General Affairs Department</span>
-        </div>
-      </div>
       <div>&copy; General Affairs Department - 2026</div>
     </div>
   </footer>
