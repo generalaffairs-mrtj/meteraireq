@@ -19,7 +19,9 @@ DROP FUNCTION IF EXISTS public.create_meterai_request(text,text,text,text,intege
 DROP FUNCTION IF EXISTS public.update_request_status(text,text,text) CASCADE;
 DROP FUNCTION IF EXISTS public.adjust_stock(text,integer,text,text) CASCADE;
 DROP FUNCTION IF EXISTS public.set_stock(text,integer,text) CASCADE;
+DROP FUNCTION IF EXISTS public.log_activity(text,text,text,jsonb) CASCADE;
 DROP FUNCTION IF EXISTS public.set_updated_at() CASCADE;
+DROP TABLE IF EXISTS public.activity_log CASCADE;
 DROP TABLE IF EXISTS public.stock_log CASCADE;
 DROP TABLE IF EXISTS public.requests CASCADE;
 DROP TABLE IF EXISTS public.stock CASCADE;
@@ -84,6 +86,30 @@ CREATE TABLE public.stock_log (
 
 CREATE INDEX idx_stock_log_area    ON public.stock_log (area);
 CREATE INDEX idx_stock_log_created ON public.stock_log (created_at DESC);
+
+-- -----------------------------------------------------------------------------
+-- 3b. TABEL: activity_log (audit log seluruh aktivitas admin)
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.activity_log (
+    id           BIGSERIAL PRIMARY KEY,
+    user_email   VARCHAR(255),
+    user_id      UUID,
+    action_type  VARCHAR(50)  NOT NULL,
+    target       VARCHAR(255),
+    description  TEXT         NOT NULL,
+    metadata     JSONB,
+    created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    CONSTRAINT chk_activity_action CHECK (action_type IN (
+        'LOGIN','LOGOUT','LOGIN_FAILED',
+        'UPDATE_STATUS',
+        'STOCK_TAMBAH','STOCK_KURANG','STOCK_EDIT',
+        'OTHER'
+    ))
+);
+
+CREATE INDEX idx_activity_created ON public.activity_log (created_at DESC);
+CREATE INDEX idx_activity_user    ON public.activity_log (user_email);
+CREATE INDEX idx_activity_action  ON public.activity_log (action_type);
 
 -- -----------------------------------------------------------------------------
 -- 4. TRIGGER: auto-update updated_at
@@ -275,6 +301,27 @@ BEGIN
     WHERE kode_permintaan = p_kode
     RETURNING * INTO v_row;
 
+    -- Audit log aktivitas admin
+    INSERT INTO public.activity_log (user_email, user_id, action_type, target, description, metadata)
+    VALUES (
+        COALESCE(auth.jwt() ->> 'email', 'unknown'),
+        auth.uid(),
+        'UPDATE_STATUS',
+        p_kode,
+        'Update status ' || p_kode || ' (' || v_row.nama_pemohon || '): ' || v_old_status || ' → ' || p_status,
+        jsonb_build_object(
+            'kode_permintaan', p_kode,
+            'pemohon',         v_row.nama_pemohon,
+            'departemen',      v_row.departemen,
+            'lokasi_kerja',    v_row.lokasi_kerja,
+            'jumlah_meterai',  v_row.jumlah_meterai,
+            'old_status',      v_old_status,
+            'new_status',      p_status,
+            'keterangan',      trim(p_keterangan),
+            'stock_changed',   (v_row.stock_deducted IS DISTINCT FROM v_old_deducted)
+        )
+    );
+
     RETURN v_row;
 END;
 $$;
@@ -314,6 +361,22 @@ BEGIN
     INSERT INTO public.stock_log (area, perubahan, stok_sebelum, stok_sesudah, tipe, keterangan)
     VALUES (p_area, p_perubahan, v_before, v_after, p_tipe, p_keterangan);
 
+    INSERT INTO public.activity_log (user_email, user_id, action_type, target, description, metadata)
+    VALUES (
+        COALESCE(auth.jwt() ->> 'email', 'unknown'),
+        auth.uid(),
+        CASE WHEN p_tipe = 'TAMBAH' THEN 'STOCK_TAMBAH' ELSE 'STOCK_KURANG' END,
+        p_area,
+        p_tipe || ' stok ' || p_area || ': ' || v_before || ' → ' || v_after || ' (' ||
+            CASE WHEN p_perubahan >= 0 THEN '+' ELSE '' END || p_perubahan || ')',
+        jsonb_build_object(
+            'area', p_area, 'tipe', p_tipe,
+            'perubahan', p_perubahan,
+            'stok_sebelum', v_before, 'stok_sesudah', v_after,
+            'keterangan', p_keterangan
+        )
+    );
+
     RETURN v_row;
 END;
 $$;
@@ -345,12 +408,63 @@ BEGIN
     INSERT INTO public.stock_log (area, perubahan, stok_sebelum, stok_sesudah, tipe, keterangan)
     VALUES (p_area, p_jumlah - v_before, v_before, p_jumlah, 'EDIT', p_keterangan);
 
+    INSERT INTO public.activity_log (user_email, user_id, action_type, target, description, metadata)
+    VALUES (
+        COALESCE(auth.jwt() ->> 'email', 'unknown'),
+        auth.uid(),
+        'STOCK_EDIT',
+        p_area,
+        'EDIT stok ' || p_area || ': ' || v_before || ' → ' || p_jumlah,
+        jsonb_build_object(
+            'area', p_area, 'tipe', 'EDIT',
+            'stok_sebelum', v_before, 'stok_sesudah', p_jumlah,
+            'keterangan', p_keterangan
+        )
+    );
+
     RETURN v_row;
 END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.adjust_stock(TEXT,INTEGER,TEXT,TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.set_stock(TEXT,INTEGER,TEXT)        TO authenticated;
+
+-- -----------------------------------------------------------------------------
+-- 7b. FUNCTION: log_activity (dipanggil frontend untuk LOGIN/LOGOUT)
+-- -----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.log_activity(
+    p_action_type TEXT,
+    p_target      TEXT,
+    p_description TEXT,
+    p_metadata    JSONB DEFAULT NULL
+)
+RETURNS BIGINT
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+    v_id BIGINT;
+BEGIN
+    IF p_action_type NOT IN ('LOGIN','LOGOUT','LOGIN_FAILED','OTHER') THEN
+        RAISE EXCEPTION 'action_type % tidak diizinkan dari client', p_action_type;
+    END IF;
+
+    INSERT INTO public.activity_log (user_email, user_id, action_type, target, description, metadata)
+    VALUES (
+        COALESCE(auth.jwt() ->> 'email', p_target, 'unknown'),
+        auth.uid(),
+        p_action_type,
+        p_target,
+        p_description,
+        p_metadata
+    )
+    RETURNING id INTO v_id;
+
+    RETURN v_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.log_activity(TEXT,TEXT,TEXT,JSONB) TO authenticated;
 
 -- -----------------------------------------------------------------------------
 -- 8. VIEWS: statistik untuk landing page & dashboard
@@ -384,6 +498,7 @@ GRANT SELECT ON public.v_monthly_stats     TO anon, authenticated;
 ALTER TABLE public.requests  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.activity_log ENABLE ROW LEVEL SECURITY;
 
 -- requests: anon dapat INSERT (via RPC) & SELECT (untuk tracking & stats); authenticated bisa semua
 CREATE POLICY "anon_select_requests"   ON public.requests FOR SELECT TO anon          USING (true);
@@ -400,6 +515,10 @@ CREATE POLICY "auth_all_stock"         ON public.stock    FOR ALL    TO authenti
 -- stock_log: anon SELECT (read-only audit), authenticated full
 CREATE POLICY "anon_select_stock_log"  ON public.stock_log FOR SELECT TO anon          USING (true);
 CREATE POLICY "auth_all_stock_log"     ON public.stock_log FOR ALL    TO authenticated USING (true) WITH CHECK (true);
+
+-- activity_log: HANYA authenticated (privacy — anon tidak boleh lihat siapa yang login kapan)
+CREATE POLICY "auth_select_activity"   ON public.activity_log FOR SELECT TO authenticated USING (true);
+CREATE POLICY "auth_insert_activity"   ON public.activity_log FOR INSERT TO authenticated WITH CHECK (true);
 
 -- -----------------------------------------------------------------------------
 -- 10. SAMPLE DATA (opsional - hapus blok ini bila tidak diperlukan)

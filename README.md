@@ -37,6 +37,11 @@ Platform internal untuk pengajuan, pelacakan, dan pengelolaan permintaan meterai
   - Operasi: Tambah, Kurangi, Edit (set absolut)
   - Setiap mutasi tercatat di audit log dengan keterangan dan timestamp
   - Tabel histori perubahan stok dengan pagination
+- **Log Aktivitas**
+  - Riwayat lengkap: login, logout, update status, mutasi stok
+  - Filter per jenis aksi + pencarian bebas (user/target/deskripsi)
+  - Pagination, refresh manual
+  - Tampil siapa yang melakukan apa, kapan, dan detail metadata-nya
 
 ### 🔄 Sinkronisasi Stok Otomatis
 
@@ -69,10 +74,11 @@ Platform internal untuk pengajuan, pelacakan, dan pengelolaan permintaan meterai
 
 ```
 .
-├── index.html                  # Aplikasi PWA single-file (HTML + CSS + JS)
-├── database.sql                # Skema lengkap Supabase (untuk install fresh)
-├── migration_stock_sync.sql    # Migrasi sinkronisasi stok (untuk DB yang sudah ada)
-└── README.md                   # File ini
+├── index.html                    # Aplikasi PWA single-file (HTML + CSS + JS)
+├── database.sql                  # Skema lengkap Supabase (untuk install fresh)
+├── migration_stock_sync.sql      # Migrasi v1.1: sinkronisasi otomatis stok
+├── migration_activity_log.sql    # Migrasi v1.2: log aktivitas admin
+└── README.md                     # File ini
 ```
 
 ---
@@ -135,15 +141,17 @@ Ganti dengan kredensial dari **Supabase Settings → API**:
 | `requests` | Permintaan meterai (kode, pemohon, status, dll + flag `stock_deducted`) |
 | `stock` | Stok per area (3 lokasi pre-seeded) |
 | `stock_log` | Audit log seluruh perubahan stok |
+| `activity_log` | Audit log aktivitas admin (login, status, stok) |
 
 ### RPC Functions
 
 | Function | Akses | Kegunaan |
 |---|---|---|
 | `create_meterai_request(...)` | anon, authenticated | Submit form, generate kode atomik |
-| `update_request_status(kode, status, keterangan)` | authenticated | Update status + auto-sync stok |
-| `adjust_stock(area, perubahan, tipe, keterangan)` | authenticated | Tambah/kurangi stok manual |
-| `set_stock(area, jumlah_baru, keterangan)` | authenticated | Set nilai stok absolut |
+| `update_request_status(kode, status, keterangan)` | authenticated | Update status + auto-sync stok + auto-log |
+| `adjust_stock(area, perubahan, tipe, keterangan)` | authenticated | Tambah/kurangi stok manual + auto-log |
+| `set_stock(area, jumlah_baru, keterangan)` | authenticated | Set nilai stok absolut + auto-log |
+| `log_activity(action, target, description, metadata)` | authenticated | Log LOGIN/LOGOUT dari frontend |
 
 ### Views
 
@@ -154,8 +162,9 @@ Ganti dengan kredensial dari **Supabase Settings → API**:
 
 ### Row Level Security
 
-- **anon** — INSERT permintaan, SELECT permintaan/stok/log (untuk tracking & statistik publik)
-- **authenticated** — Full access ke seluruh tabel & RPC
+- **anon** — INSERT permintaan, SELECT permintaan/stok/stock_log (untuk tracking & statistik publik)
+- **authenticated** — Full access ke seluruh tabel & RPC, termasuk `activity_log`
+- **`activity_log`** — admin-only (anon **tidak** bisa membaca log aktivitas demi privasi)
 
 ---
 
@@ -172,6 +181,22 @@ Ganti dengan kredensial dari **Supabase Settings → API**:
 ---
 
 ## 📝 Changelog
+
+### v1.2.0 — 8 Mei 2026
+
+**Log aktivitas admin**
+
+- ➕ Tabel baru `activity_log` untuk audit trail seluruh aktivitas admin
+- ➕ RPC `log_activity` (frontend) untuk catat LOGIN/LOGOUT
+- 🔄 RPC `update_request_status`, `adjust_stock`, `set_stock` sekarang otomatis menulis ke `activity_log` (siapa, kapan, apa, detail metadata JSONB)
+- 🎨 Halaman baru di admin sidebar: **Log Aktivitas**
+  - Tabel: Waktu | User | Aksi | Target | Deskripsi
+  - Filter dropdown per jenis aksi (Login, Logout, Update Status, Stok Tambah/Kurangi/Edit)
+  - Pencarian bebas (user / target / deskripsi)
+  - Pagination + tombol refresh
+  - Action chip warna-warni dengan ikon kontekstual
+- 🔐 RLS: `activity_log` admin-only — anon tidak bisa lihat siapa login kapan
+- 📁 File baru: `migration_activity_log.sql` untuk apply ke database lama tanpa reset
 
 ### v1.1.0 — 8 Mei 2026
 

@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=bar_chart_4_bars" />  
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=bar_chart_4_bars" />
 
 <!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -398,6 +398,16 @@ a:hover{text-decoration:underline;}
 .chip.ditolak   {background:var(--c-danger-50);color:var(--c-danger);border-color:#FECACA;}
 .chip.selesai   {background:var(--c-success-50);color:var(--c-success);border-color:#A7F3D0;}
 
+/* Activity action chips */
+.chip[class*="act-"]::before{display:none;}
+.chip.act-login        {background:var(--c-success-50);color:var(--c-success);border-color:#A7F3D0;}
+.chip.act-logout       {background:#F1F5F9;color:#475569;border-color:#E2E8F0;}
+.chip.act-loginfail    {background:var(--c-danger-50);color:var(--c-danger);border-color:#FECACA;}
+.chip.act-status       {background:var(--c-info-50);color:var(--c-info);border-color:#BFDBFE;}
+.chip.act-stock-add    {background:#ECFDF5;color:#047857;border-color:#A7F3D0;}
+.chip.act-stock-sub    {background:var(--c-warning-50);color:var(--c-warning);border-color:#FED7AA;}
+.chip.act-stock-edit   {background:#F3E8FF;color:#7C3AED;border-color:#DDD6FE;}
+
 /* =========================================================================
    CARA PAKAI (HOW TO)
    ========================================================================= */
@@ -740,7 +750,6 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
   <header class="site-header">
     <div class="container">
       <div class="brand">
-        <div class="brand-mark">M</div>
         <div class="brand-text-wrap">
           <span class="brand-text">Meterai Request</span>
           <span class="brand-sub">General Affairs Department</span>
@@ -762,7 +771,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
   <!-- HERO -->
   <section class="hero">
     <div class="container hero-inner">
-      <h1>Pengajuan Meterai <span class="accent">General Affairs</span></h1>
+      <h1>Platform Pengajuan Meterai <br><span class="accent">General Affairs</span></h1>
       <div class="hero-cta">
         <a href="#permintaan" class="btn btn-primary btn-lg">
           <span class="material-symbols-rounded">edit_document</span>
@@ -1002,6 +1011,9 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
         <a class="nav-item"        data-view="stock"      onclick="admin.showView('stock')">
           <span class="material-symbols-rounded">inventory_2</span><span>Stok Meterai</span>
         </a>
+        <a class="nav-item"        data-view="activity"   onclick="admin.showView('activity')">
+          <span class="material-symbols-rounded">manage_history</span><span>Log Aktivitas</span>
+        </a>
 
         <div class="nav-section-title">Lainnya</div>
         <a class="nav-item" onclick="ui.gotoLanding()">
@@ -1148,6 +1160,49 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
               </table>
             </div>
             <div class="pagination" id="stock-log-pagination"></div>
+          </div>
+        </div>
+
+        <!-- VIEW: ACTIVITY LOG -->
+        <div class="admin-view" id="view-activity" hidden>
+          <div class="table-card">
+            <div class="table-toolbar" style="flex-wrap:wrap; gap:10px;">
+              <div>
+                <h3>Log Aktivitas Admin</h3>
+                <div class="text-sm text-muted">Riwayat login, perubahan status, dan mutasi stok</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="search" class="input" id="activity-search" placeholder="Cari user / target / deskripsi…" style="min-width:220px;" />
+                <select class="select" id="activity-filter" style="min-width:170px;">
+                  <option value="">Semua Aksi</option>
+                  <option value="LOGIN">Login</option>
+                  <option value="LOGOUT">Logout</option>
+                  <option value="LOGIN_FAILED">Login Gagal</option>
+                  <option value="UPDATE_STATUS">Update Status</option>
+                  <option value="STOCK_TAMBAH">Stok: Tambah</option>
+                  <option value="STOCK_KURANG">Stok: Kurangi</option>
+                  <option value="STOCK_EDIT">Stok: Edit</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" onclick="admin.loadActivityLog()" aria-label="Refresh">
+                  <span class="material-symbols-rounded icon-sm">refresh</span>
+                </button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data" id="activity-table">
+                <thead>
+                  <tr>
+                    <th style="white-space:nowrap;">Waktu</th>
+                    <th>User</th>
+                    <th>Aksi</th>
+                    <th>Target</th>
+                    <th>Deskripsi</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="activity-pagination"></div>
           </div>
         </div>
 
@@ -1309,8 +1364,8 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
 /* ============================================================
    SUPABASE CONFIG  ←  GANTI DUA NILAI INI DENGAN PROYEK ANDA
    ============================================================ */
-const SUPABASE_URL  = 'https://YOUR-PROJECT-ID.supabase.co';
-const SUPABASE_ANON = 'YOUR-ANON-PUBLIC-KEY';
+const SUPABASE_URL  = 'https://hfwwfoceaduytiaevnay.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhmd3dmb2NlYWR1eXRpYWV2bmF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjA4NjcsImV4cCI6MjA5MzczNjg2N30.Wkx9O6OF_q4mDCjldvGTV6nUC4SERiOp-Ot2hMKKbuw';
 /* ============================================================ */
 
 const sb = (typeof supabase !== 'undefined')
@@ -1674,12 +1729,34 @@ const auth = {
   },
   async login(email,password){
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    if (error){
+      // Best-effort log of failed attempt — uses anon key, will fail silently if RLS blocks (which it does)
+      // We instead skip; failed logins are logged client-side only via toast
+      throw error;
+    }
     this.user = data.user;
+    // Log successful login
+    try{
+      await sb.rpc('log_activity', {
+        p_action_type: 'LOGIN',
+        p_target: data.user?.email || email,
+        p_description: 'Login berhasil dari admin console',
+        p_metadata: { user_agent: navigator.userAgent.slice(0,200) }
+      });
+    }catch(e){ console.warn('log_activity LOGIN failed', e); }
     return data;
   },
   async logout(){
     if (!sb) return;
+    // Log BEFORE signOut (otherwise we lose auth context for the RPC)
+    try{
+      await sb.rpc('log_activity', {
+        p_action_type: 'LOGOUT',
+        p_target: this.user?.email || null,
+        p_description: 'Logout dari admin console',
+        p_metadata: null
+      });
+    }catch(e){ console.warn('log_activity LOGOUT failed', e); }
     await sb.auth.signOut();
     this.user = null;
     ui.gotoLanding();
@@ -1719,7 +1796,9 @@ const admin = {
     pendingTotal:0,
     stockLogPage:1, stockLogPerPage:10,
     editingRequest:null,
-    editingStock:null, editingStockMode:null
+    editingStock:null, editingStockMode:null,
+    activityPage:1, activityPerPage:15,
+    activityFilter:'', activitySearch:''
   },
 
   async init(){
@@ -1743,13 +1822,23 @@ const admin = {
       this.state.reqPage = 1;
       this.loadRequests();
     });
+    $('#activity-search').addEventListener('input', debounce(()=>{
+      this.state.activitySearch = $('#activity-search').value.trim();
+      this.state.activityPage = 1;
+      this.loadActivityLog();
+    },300));
+    $('#activity-filter').addEventListener('change', ()=>{
+      this.state.activityFilter = $('#activity-filter').value;
+      this.state.activityPage = 1;
+      this.loadActivityLog();
+    });
   },
 
   showView(view){
     this.state.currentView = view;
     $$('.admin-view').forEach(v=>v.hidden = (v.id !== `view-${view}`));
     $$('.nav-item[data-view]').forEach(i=>i.classList.toggle('active', i.dataset.view===view));
-    const titles = { dashboard:'Dashboard', permintaan:'Data Permintaan Meterai', stock:'Stok Meterai' };
+    const titles = { dashboard:'Dashboard', permintaan:'Data Permintaan Meterai', stock:'Stok Meterai', activity:'Log Aktivitas' };
     $('#admin-page-title').textContent = titles[view] || 'Admin';
     if (window.innerWidth <= 900) ui.toggleSidebar(false);
     this.refresh();
@@ -1760,6 +1849,7 @@ const admin = {
     if (v==='dashboard')  this.loadDashboard();
     if (v==='permintaan') this.loadRequests();
     if (v==='stock')      this.loadStockSection();
+    if (v==='activity')   this.loadActivityLog();
   },
 
   async loadDashboard(){
@@ -2097,6 +2187,68 @@ const admin = {
     this.renderPagination('#stock-log-pagination', count||0, page, per, p=>{
       this.state.stockLogPage = p; this.loadStockLog();
     });
+  },
+
+  async loadActivityLog(){
+    if (!sb || !auth.user) return;
+    const page = this.state.activityPage, per = this.state.activityPerPage;
+    const from = (page-1)*per, to = from + per - 1;
+
+    let q = sb.from('activity_log')
+      .select('*',{count:'exact'})
+      .order('created_at',{ascending:false})
+      .range(from,to);
+
+    if (this.state.activityFilter){
+      q = q.eq('action_type', this.state.activityFilter);
+    }
+    if (this.state.activitySearch){
+      const s = this.state.activitySearch;
+      // Postgres `or` filter — escape commas/parens by URL-encoding indirectly via single token
+      q = q.or(`user_email.ilike.%${s}%,target.ilike.%${s}%,description.ilike.%${s}%`);
+    }
+
+    const { data, count, error } = await q;
+    if (error){
+      console.error(error);
+      $('#activity-table tbody').innerHTML = `<tr><td colspan="5"><div class="empty"><span class="material-symbols-rounded">error</span><p>Gagal memuat log: ${escapeHtml(error.message||'')}</p></div></td></tr>`;
+      $('#activity-pagination').innerHTML = '';
+      return;
+    }
+
+    const tbody = $('#activity-table tbody');
+    tbody.innerHTML = (data||[]).length
+      ? data.map(l=>{
+        const action = this.activityChip(l.action_type);
+        const target = l.target ? `<span class="text-sm" style="font-family:ui-monospace,Menlo,monospace;">${escapeHtml(l.target)}</span>` : '<span class="text-muted">—</span>';
+        return `
+          <tr>
+            <td class="text-sm text-muted" style="white-space:nowrap;">${fmtDate(l.created_at)}</td>
+            <td><div style="font-weight:600;">${escapeHtml(l.user_email||'unknown')}</div></td>
+            <td>${action}</td>
+            <td>${target}</td>
+            <td class="text-sm">${escapeHtml(l.description||'—')}</td>
+          </tr>`;
+      }).join('')
+      : `<tr><td colspan="5"><div class="empty"><span class="material-symbols-rounded">manage_history</span><p>Belum ada aktivitas tercatat</p></div></td></tr>`;
+
+    this.renderPagination('#activity-pagination', count||0, page, per, p=>{
+      this.state.activityPage = p; this.loadActivityLog();
+    });
+  },
+
+  activityChip(type){
+    const map = {
+      'LOGIN':         { cls:'act-login',      label:'Login',          icon:'login' },
+      'LOGOUT':        { cls:'act-logout',     label:'Logout',         icon:'logout' },
+      'LOGIN_FAILED':  { cls:'act-loginfail',  label:'Login Gagal',    icon:'block' },
+      'UPDATE_STATUS': { cls:'act-status',     label:'Update Status',  icon:'edit_note' },
+      'STOCK_TAMBAH':  { cls:'act-stock-add',  label:'Stok +',         icon:'add_circle' },
+      'STOCK_KURANG':  { cls:'act-stock-sub',  label:'Stok −',         icon:'remove_circle' },
+      'STOCK_EDIT':    { cls:'act-stock-edit', label:'Stok Edit',      icon:'edit' }
+    };
+    const m = map[type] || { cls:'belum', label:type||'—', icon:'help' };
+    return `<span class="chip ${m.cls}" style="white-space:nowrap;"><span class="material-symbols-rounded" style="font-size:14px;">${m.icon}</span>${escapeHtml(m.label)}</span>`;
   },
 
   renderPagination(sel, total, page, per, onClick){
