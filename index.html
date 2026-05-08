@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=block" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=bar_chart_4_bars" />
-
+  
 <!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -676,6 +676,20 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
 
 /* Stock cards */
 .stock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px;}
+
+/* Master data grid (Departemen | Divisi side-by-side on desktop) */
+.master-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:flex-start;}
+@media (max-width:1100px){ .master-grid{grid-template-columns:1fr;} }
+
+/* Action button group (edit + delete inline) */
+.row-actions{display:inline-flex;gap:4px;}
+.btn-icon-sm{
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--c-border);
+  background:var(--c-surface);display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;color:var(--c-text-muted);
+}
+.btn-icon-sm:hover{background:var(--c-bg);color:var(--c-text);}
+.btn-icon-sm.danger:hover{background:var(--c-danger-50);color:var(--c-danger);border-color:#FCA5A5;}
 .stock-card{
   background:#fff;border:1px solid var(--c-border);border-radius:var(--radius-lg);
   padding:20px;box-shadow:var(--shadow-sm);
@@ -751,7 +765,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
     <div class="container">
       <div class="brand">
         <div class="brand-text-wrap">
-          <span class="brand-text">Meterai Request</span>
+          <span class="brand-text">Permintaan Meterai</span>
           <span class="brand-sub">General Affairs Department</span>
         </div>
       </div>
@@ -836,7 +850,6 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="section-head">
         <span class="section-eyebrow">Pengajuan</span>
         <h2 class="section-title">Form Permintaan Meterai</h2>
-        <p class="section-desc">Isi data berikut dengan lengkap. Kode permintaan akan otomatis diberikan setelah Anda submit.</p>
       </div>
 
       <form class="form-card" id="form-permintaan" novalidate>
@@ -853,12 +866,16 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
 
           <div class="field">
             <label>Departemen <span class="req">*</span></label>
-            <input type="text" class="input" id="f-dept" maxlength="150" required />
+            <select class="select" id="f-dept" required>
+              <option value="">— Memuat… —</option>
+            </select>
           </div>
 
           <div class="field">
             <label>Divisi <span class="req">*</span></label>
-            <input type="text" class="input" id="f-divisi" maxlength="150" required />
+            <select class="select" id="f-divisi" required disabled>
+              <option value="">— Pilih departemen dulu —</option>
+            </select>
           </div>
 
           <div class="field">
@@ -913,7 +930,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="section-head">
         <span class="section-eyebrow">Tracking</span>
         <h2 class="section-title">Lacak Permintaan Anda</h2>
-        <p class="section-desc">Masukkan kode permintaan untuk mengetahui status terkini.</p>
+        <p class="section-desc">Masukkan kode permintaan untuk mengetahui status pengajuan Anda!</p>
       </div>
 
       <div class="tracking-wrap">
@@ -935,7 +952,6 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="section-head">
         <span class="section-eyebrow">Panduan</span>
         <h2 class="section-title">Cara Penggunaan Platform</h2>
-        <p class="section-desc">Empat langkah sederhana untuk mendapatkan meterai yang Anda butuhkan.</p>
       </div>
 
       <div class="steps">
@@ -989,8 +1005,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-head">
         <div class="brand-text-wrap">
-          <span class="brand-text" style="color:#fff;">Meterai Request</span>
-          <span class="brand-sub">Halaman Admin</span>
+          <span class="brand-text" style="color:#fff;">Admin Panel</span>
         </div>
       </div>
       <nav class="sidebar-nav">
@@ -1003,6 +1018,9 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
         </a>
         <a class="nav-item"        data-view="stock"      onclick="admin.showView('stock')">
           <span class="material-symbols-rounded">inventory_2</span><span>Stok Meterai</span>
+        </a>
+        <a class="nav-item"        data-view="master"     onclick="admin.showView('master')">
+          <span class="material-symbols-rounded">account_tree</span><span>Master Data</span>
         </a>
         <a class="nav-item"        data-view="activity"   onclick="admin.showView('activity')">
           <span class="material-symbols-rounded">manage_history</span><span>Log Aktivitas</span>
@@ -1153,6 +1171,60 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
           </div>
         </div>
 
+        <!-- VIEW: MASTER DATA (Departemen & Divisi) -->
+        <div class="admin-view" id="view-master" hidden>
+          <div class="master-grid">
+            <!-- DEPARTEMEN -->
+            <div class="table-card">
+              <div class="table-toolbar">
+                <div>
+                  <h3>Departemen</h3>
+                  <div class="text-sm text-muted">Kelola daftar departemen</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="admin.openMasterModal('department', null)">
+                  <span class="material-symbols-rounded icon-sm">add</span>
+                  <span>Tambah</span>
+                </button>
+              </div>
+              <div class="table-wrap">
+                <table class="data" id="dept-table">
+                  <thead>
+                    <tr><th style="width:50px;">#</th><th>Nama</th><th style="width:80px;">Divisi</th><th style="width:90px;">Status</th><th style="width:110px;">Aksi</th></tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- DIVISI -->
+            <div class="table-card">
+              <div class="table-toolbar" style="flex-wrap:wrap; gap:10px;">
+                <div>
+                  <h3>Divisi</h3>
+                  <div class="text-sm text-muted">Kelola daftar divisi per departemen</div>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <select class="select" id="div-filter-dept" style="min-width:180px;">
+                    <option value="">Semua Departemen</option>
+                  </select>
+                  <button class="btn btn-primary btn-sm" onclick="admin.openMasterModal('division', null)">
+                    <span class="material-symbols-rounded icon-sm">add</span>
+                    <span>Tambah</span>
+                  </button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data" id="div-table">
+                  <thead>
+                    <tr><th style="width:50px;">#</th><th>Nama Divisi</th><th>Departemen</th><th style="width:90px;">Status</th><th style="width:110px;">Aksi</th></tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- VIEW: ACTIVITY LOG -->
         <div class="admin-view" id="view-activity" hidden>
           <div class="table-card">
@@ -1172,6 +1244,9 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
                   <option value="STOCK_TAMBAH">Stok: Tambah</option>
                   <option value="STOCK_KURANG">Stok: Kurangi</option>
                   <option value="STOCK_EDIT">Stok: Edit</option>
+                  <option value="MASTER_CREATE">Master: Tambah</option>
+                  <option value="MASTER_UPDATE">Master: Edit</option>
+                  <option value="MASTER_DELETE">Master: Hapus</option>
                 </select>
                 <button class="btn btn-ghost btn-sm" onclick="admin.loadActivityLog()" aria-label="Refresh">
                   <span class="material-symbols-rounded icon-sm">refresh</span>
@@ -1339,6 +1414,68 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <button class="btn btn-primary" onclick="admin.saveStock()" id="btn-save-stock">
         <span class="material-symbols-rounded icon-sm">save</span>
         <span>Simpan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MASTER DATA (Departemen / Divisi) -->
+<div class="modal-backdrop" id="modal-master" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="master-modal-title">Tambah Departemen</h3>
+      <button class="modal-close" onclick="ui.closeModal('modal-master')" aria-label="Close">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field" id="master-dept-field" style="margin-bottom:14px; display:none;">
+        <label>Departemen <span class="req">*</span></label>
+        <select class="select" id="master-dept-select" required>
+          <option value="">— Pilih departemen —</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label id="master-nama-label">Nama Departemen <span class="req">*</span></label>
+        <input type="text" class="input" id="master-nama" maxlength="150" required placeholder="mis. Information Technology" />
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Urutan tampil <span class="text-muted">(opsional, kecil = atas)</span></label>
+        <input type="number" class="input" id="master-urutan" min="0" max="9999" value="0" />
+      </div>
+      <div class="field">
+        <label class="checkbox">
+          <input type="checkbox" id="master-aktif" checked />
+          <span>Aktif (tampil di form publik)</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="ui.closeModal('modal-master')">Batal</button>
+      <button class="btn btn-primary" onclick="admin.saveMaster()" id="btn-save-master">
+        <span class="material-symbols-rounded icon-sm">save</span>
+        <span>Simpan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- KONFIRMASI HAPUS -->
+<div class="modal-backdrop" id="modal-confirm" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-body" style="text-align:center; padding-top:32px;">
+      <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:var(--c-danger-50);display:flex;align-items:center;justify-content:center;">
+        <span class="material-symbols-rounded" style="font-size:32px;color:var(--c-danger);">delete</span>
+      </div>
+      <h3 id="confirm-title" style="margin:0 0 8px;">Konfirmasi Hapus</h3>
+      <p id="confirm-message" style="color:var(--c-text-muted); margin:0 0 8px;">Apakah Anda yakin ingin menghapus item ini?</p>
+      <p id="confirm-warning" class="text-sm" style="color:var(--c-danger); margin:0 0 8px; display:none;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-block" onclick="ui.closeModal('modal-confirm')">Batal</button>
+      <button class="btn btn-danger btn-block" id="btn-confirm-yes" onclick="admin.runConfirm()">
+        <span class="material-symbols-rounded icon-sm">delete</span>
+        <span>Ya, Hapus</span>
       </button>
     </div>
   </div>
@@ -1514,6 +1651,9 @@ $('#f-jumlah').addEventListener('input', e=>{
   else if (n>9999) e.target.value = 9999;
 });
 
+// Cascading select: when departemen changes, refilter divisi
+$('#f-dept').addEventListener('change', ()=>masterData.onDeptChange());
+
 $('#form-permintaan').addEventListener('submit', async e=>{
   e.preventDefault();
   if (notSupabase()) return;
@@ -1551,6 +1691,7 @@ $('#form-permintaan').addEventListener('submit', async e=>{
     ui.openModal('modal-success');
     e.target.reset();
     $('#f-jumlah').value = 1;
+    masterData.fillFormSelects(); // re-init cascade after reset
     previewKode();
     loadLandingStats();
   }catch(err){
@@ -1788,7 +1929,10 @@ const admin = {
     editingRequest:null,
     editingStock:null, editingStockMode:null,
     activityPage:1, activityPerPage:15,
-    activityFilter:'', activitySearch:''
+    activityFilter:'', activitySearch:'',
+    masterDivFilter:'',
+    masterEditing:null,    // {kind:'department'|'division', id, ...}
+    pendingConfirm:null    // {fn, label}
   },
 
   async init(){
@@ -1822,13 +1966,17 @@ const admin = {
       this.state.activityPage = 1;
       this.loadActivityLog();
     });
+    $('#div-filter-dept').addEventListener('change', ()=>{
+      this.state.masterDivFilter = $('#div-filter-dept').value;
+      this.renderDivisionsTable();
+    });
   },
 
   showView(view){
     this.state.currentView = view;
     $$('.admin-view').forEach(v=>v.hidden = (v.id !== `view-${view}`));
     $$('.nav-item[data-view]').forEach(i=>i.classList.toggle('active', i.dataset.view===view));
-    const titles = { dashboard:'Dashboard', permintaan:'Data Permintaan Meterai', stock:'Stok Meterai', activity:'Log Aktivitas' };
+    const titles = { dashboard:'Dashboard', permintaan:'Data Permintaan Meterai', stock:'Stok Meterai', activity:'Log Aktivitas', master:'Master Data — Departemen & Divisi' };
     $('#admin-page-title').textContent = titles[view] || 'Admin';
     if (window.innerWidth <= 900) ui.toggleSidebar(false);
     this.refresh();
@@ -1840,6 +1988,7 @@ const admin = {
     if (v==='permintaan') this.loadRequests();
     if (v==='stock')      this.loadStockSection();
     if (v==='activity')   this.loadActivityLog();
+    if (v==='master')     this.loadMaster();
   },
 
   async loadDashboard(){
@@ -2235,10 +2384,200 @@ const admin = {
       'UPDATE_STATUS': { cls:'act-status',     label:'Update Status',  icon:'edit_note' },
       'STOCK_TAMBAH':  { cls:'act-stock-add',  label:'Stok +',         icon:'add_circle' },
       'STOCK_KURANG':  { cls:'act-stock-sub',  label:'Stok −',         icon:'remove_circle' },
-      'STOCK_EDIT':    { cls:'act-stock-edit', label:'Stok Edit',      icon:'edit' }
+      'STOCK_EDIT':    { cls:'act-stock-edit', label:'Stok Edit',      icon:'edit' },
+      'MASTER_CREATE': { cls:'act-stock-add',  label:'Master +',       icon:'add_circle' },
+      'MASTER_UPDATE': { cls:'act-status',     label:'Master Edit',    icon:'edit' },
+      'MASTER_DELETE': { cls:'act-loginfail',  label:'Master Hapus',   icon:'delete' }
     };
     const m = map[type] || { cls:'belum', label:type||'—', icon:'help' };
     return `<span class="chip ${m.cls}" style="white-space:nowrap;"><span class="material-symbols-rounded" style="font-size:14px;">${m.icon}</span>${escapeHtml(m.label)}</span>`;
+  },
+
+  /* ---------- MASTER DATA ---------- */
+  async loadMaster(){
+    if (!sb || !auth.user) return;
+    try{
+      // Reload master data global supaya admin & form publik selalu sync
+      await masterData.loadAll();
+      // Update filter dropdown divisi
+      const f = $('#div-filter-dept');
+      const cur = this.state.masterDivFilter;
+      f.innerHTML = '<option value="">Semua Departemen</option>' +
+        masterData.departments.map(d=>`<option value="${d.id}" ${String(d.id)===cur?'selected':''}>${escapeHtml(d.nama)}</option>`).join('');
+      this.renderDeptsTable();
+      this.renderDivisionsTable();
+      // Refresh form publik kalau ada user yang lagi buka tab landing
+      masterData.fillFormSelects();
+    }catch(err){ console.error(err); toast('Gagal memuat master data','error'); }
+  },
+
+  renderDeptsTable(){
+    const tbody = $('#dept-table tbody');
+    const list = masterData.departments;
+    tbody.innerHTML = list.length
+      ? list.map((d,i)=>{
+        const divCount = masterData.divsOf(d.id).length;
+        return `
+          <tr>
+            <td class="text-muted">${i+1}</td>
+            <td><div style="font-weight:600;">${escapeHtml(d.nama)}</div></td>
+            <td>${divCount}</td>
+            <td>${d.aktif ? '<span class="chip selesai">Aktif</span>' : '<span class="chip belum">Nonaktif</span>'}</td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-icon-sm" onclick='admin.openMasterModal("department",${JSON.stringify(d).replace(/"/g,"&quot;")})' aria-label="Edit">
+                  <span class="material-symbols-rounded icon-sm">edit</span>
+                </button>
+                <button class="btn-icon-sm danger" onclick='admin.confirmDeleteDept(${d.id})' aria-label="Hapus">
+                  <span class="material-symbols-rounded icon-sm">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('')
+      : `<tr><td colspan="5"><div class="empty"><span class="material-symbols-rounded">domain_disabled</span><p>Belum ada departemen</p></div></td></tr>`;
+  },
+
+  renderDivisionsTable(){
+    const tbody = $('#div-table tbody');
+    let list = masterData.divisions;
+    if (this.state.masterDivFilter){
+      list = list.filter(d => String(d.department_id) === this.state.masterDivFilter);
+    }
+    tbody.innerHTML = list.length
+      ? list.map((d,i)=>{
+        const dept = masterData.byId(masterData.departments, d.department_id);
+        return `
+          <tr>
+            <td class="text-muted">${i+1}</td>
+            <td><div style="font-weight:600;">${escapeHtml(d.nama)}</div></td>
+            <td class="text-sm">${escapeHtml(dept?.nama || '—')}</td>
+            <td>${d.aktif ? '<span class="chip selesai">Aktif</span>' : '<span class="chip belum">Nonaktif</span>'}</td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-icon-sm" onclick='admin.openMasterModal("division",${JSON.stringify(d).replace(/"/g,"&quot;")})' aria-label="Edit">
+                  <span class="material-symbols-rounded icon-sm">edit</span>
+                </button>
+                <button class="btn-icon-sm danger" onclick='admin.confirmDeleteDiv(${d.id})' aria-label="Hapus">
+                  <span class="material-symbols-rounded icon-sm">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('')
+      : `<tr><td colspan="5"><div class="empty"><span class="material-symbols-rounded">folder_off</span><p>${this.state.masterDivFilter ? 'Belum ada divisi untuk departemen ini' : 'Belum ada divisi'}</p></div></td></tr>`;
+  },
+
+  openMasterModal(kind, item){
+    this.state.masterEditing = { kind, item };
+    const isEdit = !!item;
+    const isDiv  = kind === 'division';
+    $('#master-modal-title').textContent =
+      (isEdit ? 'Edit ' : 'Tambah ') + (isDiv ? 'Divisi' : 'Departemen');
+    $('#master-nama-label').innerHTML =
+      (isDiv ? 'Nama Divisi' : 'Nama Departemen') + ' <span class="req">*</span>';
+    $('#master-nama').value   = item?.nama || '';
+    $('#master-urutan').value = item?.urutan ?? 0;
+    $('#master-aktif').checked = item ? !!item.aktif : true;
+
+    // Field departemen — hanya tampil untuk divisi
+    const deptField = $('#master-dept-field');
+    deptField.style.display = isDiv ? 'block' : 'none';
+    if (isDiv){
+      const sel = $('#master-dept-select');
+      sel.innerHTML = '<option value="">— Pilih departemen —</option>' +
+        masterData.departments.map(d=>`<option value="${d.id}" ${item && d.id==item.department_id?'selected':''}>${escapeHtml(d.nama)}</option>`).join('');
+    }
+    ui.openModal('modal-master');
+    setTimeout(()=>$('#master-nama').focus(), 100);
+  },
+
+  async saveMaster(){
+    const ed = this.state.masterEditing; if (!ed) return;
+    const nama   = $('#master-nama').value.trim();
+    const urutan = parseInt($('#master-urutan').value, 10) || 0;
+    const aktif  = $('#master-aktif').checked;
+    if (!nama){ toast('Nama wajib diisi','warning'); $('#master-nama').focus(); return; }
+
+    const btn = $('#btn-save-master'); const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Menyimpan…</span>';
+    try{
+      if (ed.kind === 'department'){
+        const { error } = await sb.rpc('upsert_department',{
+          p_id: ed.item?.id || null,
+          p_nama: nama, p_urutan: urutan, p_aktif: aktif
+        });
+        if (error) throw error;
+        toast(ed.item ? 'Departemen diperbarui' : 'Departemen ditambahkan','success');
+      } else {
+        const deptId = parseInt($('#master-dept-select').value, 10);
+        if (!deptId){ toast('Pilih departemen','warning'); btn.disabled=false; btn.innerHTML=orig; return; }
+        const { error } = await sb.rpc('upsert_division',{
+          p_id: ed.item?.id || null,
+          p_department_id: deptId,
+          p_nama: nama, p_urutan: urutan, p_aktif: aktif
+        });
+        if (error) throw error;
+        toast(ed.item ? 'Divisi diperbarui' : 'Divisi ditambahkan','success');
+      }
+      ui.closeModal('modal-master');
+      await this.loadMaster();
+    }catch(err){
+      console.error(err);
+      toast('Gagal: ' + (err.message||''), 'error', 6000);
+    }finally{
+      btn.disabled = false; btn.innerHTML = orig;
+    }
+  },
+
+  confirmDeleteDept(id){
+    const dept = masterData.byId(masterData.departments, id); if (!dept) return;
+    const divCount = masterData.divsOf(id).length;
+    $('#confirm-title').textContent = 'Hapus Departemen?';
+    $('#confirm-message').innerHTML = `Departemen <b>${escapeHtml(dept.nama)}</b> akan dihapus permanen.`;
+    const warn = $('#confirm-warning');
+    if (divCount > 0){
+      warn.style.display = 'block';
+      warn.textContent = `Peringatan: ${divCount} divisi di bawahnya juga akan ikut terhapus.`;
+    } else { warn.style.display = 'none'; }
+    this.state.pendingConfirm = async ()=>{
+      const { error } = await sb.rpc('delete_department',{ p_id: id });
+      if (error) throw error;
+      toast('Departemen dihapus','success');
+      await this.loadMaster();
+    };
+    ui.openModal('modal-confirm');
+  },
+
+  confirmDeleteDiv(id){
+    const div = masterData.byId(masterData.divisions, id); if (!div) return;
+    const dept = masterData.byId(masterData.departments, div.department_id);
+    $('#confirm-title').textContent = 'Hapus Divisi?';
+    $('#confirm-message').innerHTML = `Divisi <b>${escapeHtml(div.nama)}</b> dari departemen <b>${escapeHtml(dept?.nama||'?')}</b> akan dihapus permanen.`;
+    $('#confirm-warning').style.display = 'none';
+    this.state.pendingConfirm = async ()=>{
+      const { error } = await sb.rpc('delete_division',{ p_id: id });
+      if (error) throw error;
+      toast('Divisi dihapus','success');
+      await this.loadMaster();
+    };
+    ui.openModal('modal-confirm');
+  },
+
+  async runConfirm(){
+    const fn = this.state.pendingConfirm; if (!fn) return;
+    const btn = $('#btn-confirm-yes'); const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Menghapus…</span>';
+    try{
+      await fn();
+      ui.closeModal('modal-confirm');
+      this.state.pendingConfirm = null;
+    }catch(err){
+      console.error(err);
+      toast('Gagal: ' + (err.message||''), 'error', 6000);
+    }finally{
+      btn.disabled = false; btn.innerHTML = orig;
+    }
   },
 
   renderPagination(sel, total, page, per, onClick){
@@ -2307,13 +2646,75 @@ document.addEventListener('click', e=>{
 });
 
 /* ============================================================
-   BOOT
+   MASTER DATA (Departemen & Divisi)
+   Loader bersama: dipakai form publik & admin panel
    ============================================================ */
+const masterData = {
+  departments:[],
+  divisions:[],
+  async loadAll(){
+    if (!sb) return;
+    try{
+      const [{data:deps,error:e1},{data:divs,error:e2}] = await Promise.all([
+        sb.from('departments').select('*').order('urutan',{ascending:true}).order('nama',{ascending:true}),
+        sb.from('divisions').select('*').order('urutan',{ascending:true}).order('nama',{ascending:true})
+      ]);
+      if (e1) throw e1; if (e2) throw e2;
+      this.departments = deps || [];
+      this.divisions   = divs || [];
+    }catch(err){
+      console.warn('masterData load failed:', err);
+      this.departments = []; this.divisions = [];
+    }
+  },
+  activeDepts(){ return this.departments.filter(d=>d.aktif); },
+  activeDivsOf(deptId){ return this.divisions.filter(d=>d.aktif && d.department_id == deptId); },
+  divsOf(deptId){ return this.divisions.filter(d=>d.department_id == deptId); },
+  byId(arr,id){ return arr.find(x=>x.id == id); },
+
+  fillFormSelects(){
+    const dept = $('#f-dept'), divisi = $('#f-divisi');
+    if (!dept || !divisi) return;
+    const active = this.activeDepts();
+    if (active.length === 0){
+      dept.innerHTML = '<option value="">— Belum ada departemen, hubungi admin —</option>';
+      dept.disabled = true;
+      divisi.innerHTML = '<option value="">— —</option>';
+      divisi.disabled = true;
+      return;
+    }
+    dept.disabled = false;
+    dept.innerHTML = '<option value="">— Pilih Departemen —</option>' +
+      active.map(d=>`<option value="${escapeHtml(d.nama)}" data-id="${d.id}">${escapeHtml(d.nama)}</option>`).join('');
+    divisi.innerHTML = '<option value="">— Pilih departemen dulu —</option>';
+    divisi.disabled = true;
+  },
+
+  onDeptChange(){
+    const dept = $('#f-dept'); const divisi = $('#f-divisi');
+    const opt = dept.options[dept.selectedIndex];
+    const deptId = opt?.dataset?.id;
+    if (!deptId){
+      divisi.innerHTML = '<option value="">— Pilih departemen dulu —</option>';
+      divisi.disabled = true; return;
+    }
+    const divs = this.activeDivsOf(deptId);
+    if (divs.length === 0){
+      divisi.innerHTML = '<option value="">— Belum ada divisi terdaftar —</option>';
+      divisi.disabled = true; return;
+    }
+    divisi.disabled = false;
+    divisi.innerHTML = '<option value="">— Pilih Divisi —</option>' +
+      divs.map(d=>`<option value="${escapeHtml(d.nama)}">${escapeHtml(d.nama)}</option>`).join('');
+  }
+};
 async function boot(){
   // hide loading
   setTimeout(()=>{ $('#loading')?.classList.add('hide'); setTimeout(()=>$('#loading')?.remove(),300); }, 250);
 
   await auth.init();
+  await masterData.loadAll();
+  masterData.fillFormSelects();
   previewKode();
   loadLandingStats();
 

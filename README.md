@@ -37,6 +37,12 @@ Platform internal untuk pengajuan, pelacakan, dan pengelolaan permintaan meterai
   - Operasi: Tambah, Kurangi, Edit (set absolut)
   - Setiap mutasi tercatat di audit log dengan keterangan dan timestamp
   - Tabel histori perubahan stok dengan pagination
+- **Master Data — Departemen & Divisi**
+  - CRUD departemen dan divisi (struktur bertingkat: divisi belongs to departemen)
+  - Status aktif/nonaktif (nonaktifkan tanpa menghapus data lama)
+  - Hapus departemen otomatis cascade ke divisinya (dengan peringatan jelas)
+  - Filter divisi per departemen
+  - Master data ini muncul di form publik sebagai dropdown bertingkat — pemohon hanya bisa pilih kombinasi yang valid, tidak ada lagi typo
 - **Log Aktivitas**
   - Riwayat lengkap: login, logout, update status, mutasi stok
   - Filter per jenis aksi + pencarian bebas (user/target/deskripsi)
@@ -78,6 +84,7 @@ Platform internal untuk pengajuan, pelacakan, dan pengelolaan permintaan meterai
 ├── database.sql                  # Skema lengkap Supabase (untuk install fresh)
 ├── migration_stock_sync.sql      # Migrasi v1.1: sinkronisasi otomatis stok
 ├── migration_activity_log.sql    # Migrasi v1.2: log aktivitas admin
+├── migration_master_data.sql     # Migrasi v1.3: master data departemen & divisi
 └── README.md                     # File ini
 ```
 
@@ -141,7 +148,9 @@ Ganti dengan kredensial dari **Supabase Settings → API**:
 | `requests` | Permintaan meterai (kode, pemohon, status, dll + flag `stock_deducted`) |
 | `stock` | Stok per area (3 lokasi pre-seeded) |
 | `stock_log` | Audit log seluruh perubahan stok |
-| `activity_log` | Audit log aktivitas admin (login, status, stok) |
+| `departments` | Master data departemen (nama, urutan, aktif) |
+| `divisions` | Master data divisi (FK ke departments, nama, urutan, aktif) |
+| `activity_log` | Audit log aktivitas admin (login, status, stok, master data) |
 
 ### RPC Functions
 
@@ -151,6 +160,10 @@ Ganti dengan kredensial dari **Supabase Settings → API**:
 | `update_request_status(kode, status, keterangan)` | authenticated | Update status + auto-sync stok + auto-log |
 | `adjust_stock(area, perubahan, tipe, keterangan)` | authenticated | Tambah/kurangi stok manual + auto-log |
 | `set_stock(area, jumlah_baru, keterangan)` | authenticated | Set nilai stok absolut + auto-log |
+| `upsert_department(id, nama, urutan, aktif)` | authenticated | Create/update departemen + auto-log |
+| `delete_department(id)` | authenticated | Hapus departemen (cascade ke divisi) + auto-log |
+| `upsert_division(id, dept_id, nama, urutan, aktif)` | authenticated | Create/update divisi + auto-log |
+| `delete_division(id)` | authenticated | Hapus divisi + auto-log |
 | `log_activity(action, target, description, metadata)` | authenticated | Log LOGIN/LOGOUT dari frontend |
 
 ### Views
@@ -162,9 +175,10 @@ Ganti dengan kredensial dari **Supabase Settings → API**:
 
 ### Row Level Security
 
-- **anon** — INSERT permintaan, SELECT permintaan/stok/stock_log (untuk tracking & statistik publik)
-- **authenticated** — Full access ke seluruh tabel & RPC, termasuk `activity_log`
+- **anon** — INSERT permintaan, SELECT permintaan/stok/stock_log, SELECT departemen & divisi (yang `aktif=TRUE`)
+- **authenticated** — Full access ke seluruh tabel & RPC, termasuk `activity_log` & master data
 - **`activity_log`** — admin-only (anon **tidak** bisa membaca log aktivitas demi privasi)
+- **departemen/divisi nonaktif** — tidak terlihat di form publik tapi data lama tetap utuh
 
 ---
 
@@ -181,6 +195,26 @@ Ganti dengan kredensial dari **Supabase Settings → API**:
 ---
 
 ## 📝 Changelog
+
+### v1.3.0 — 8 Mei 2026
+
+**Master data: Departemen & Divisi**
+
+- ➕ Tabel `departments` & `divisions` dengan struktur bertingkat (divisi belongs to departemen, FK + cascade delete)
+- ➕ 4 RPC baru untuk CRUD: `upsert_department`, `delete_department`, `upsert_division`, `delete_division` — semua otomatis log ke `activity_log`
+- 🎨 Halaman baru di admin sidebar: **Master Data**
+  - Layout 2 kolom (responsive ke 1 kolom di mobile)
+  - Tabel departemen dengan jumlah divisi di bawahnya
+  - Tabel divisi dengan filter per departemen
+  - Modal tambah/edit dengan field: nama, urutan tampil, status aktif
+  - Modal konfirmasi hapus dengan peringatan cascade jika departemen punya divisi
+- 🔄 Form publik: input text + datalist (rawan typo) → **dropdown bertingkat**
+  - Pilih departemen → otomatis filter divisi yang sesuai
+  - Departemen/divisi nonaktif tidak muncul di form
+- ➕ Seed awal: 11 departemen MRT-style (GA, Finance, HR, Legal, Procurement, Operations, Engineering, IT, Marketing, Strategic Planning, Internal Audit) + 28 divisi
+- 🔄 Migration `migration_master_data.sql` extract data unik dari `requests` lama supaya master data otomatis terisi sesuai data historis
+- 🔄 Activity log support 3 action types baru: `MASTER_CREATE`, `MASTER_UPDATE`, `MASTER_DELETE` (dengan filter dan chip warna sendiri)
+- 📁 File baru: `migration_master_data.sql`
 
 ### v1.2.0 — 8 Mei 2026
 

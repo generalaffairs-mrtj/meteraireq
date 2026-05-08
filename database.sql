@@ -20,8 +20,14 @@ DROP FUNCTION IF EXISTS public.update_request_status(text,text,text) CASCADE;
 DROP FUNCTION IF EXISTS public.adjust_stock(text,integer,text,text) CASCADE;
 DROP FUNCTION IF EXISTS public.set_stock(text,integer,text) CASCADE;
 DROP FUNCTION IF EXISTS public.log_activity(text,text,text,jsonb) CASCADE;
+DROP FUNCTION IF EXISTS public.upsert_department(bigint,text,integer) CASCADE;
+DROP FUNCTION IF EXISTS public.delete_department(bigint) CASCADE;
+DROP FUNCTION IF EXISTS public.upsert_division(bigint,bigint,text,integer) CASCADE;
+DROP FUNCTION IF EXISTS public.delete_division(bigint) CASCADE;
 DROP FUNCTION IF EXISTS public.set_updated_at() CASCADE;
 DROP TABLE IF EXISTS public.activity_log CASCADE;
+DROP TABLE IF EXISTS public.divisions CASCADE;
+DROP TABLE IF EXISTS public.departments CASCADE;
 DROP TABLE IF EXISTS public.stock_log CASCADE;
 DROP TABLE IF EXISTS public.requests CASCADE;
 DROP TABLE IF EXISTS public.stock CASCADE;
@@ -88,6 +94,81 @@ CREATE INDEX idx_stock_log_area    ON public.stock_log (area);
 CREATE INDEX idx_stock_log_created ON public.stock_log (created_at DESC);
 
 -- -----------------------------------------------------------------------------
+-- 3a. TABEL: departments & divisions (master data struktur organisasi)
+-- -----------------------------------------------------------------------------
+CREATE TABLE public.departments (
+    id          BIGSERIAL PRIMARY KEY,
+    nama        VARCHAR(150) NOT NULL UNIQUE,
+    urutan      INTEGER      NOT NULL DEFAULT 0,
+    aktif       BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_departments_aktif  ON public.departments (aktif, urutan, nama);
+
+CREATE TABLE public.divisions (
+    id            BIGSERIAL PRIMARY KEY,
+    department_id BIGINT       NOT NULL REFERENCES public.departments(id) ON DELETE CASCADE,
+    nama          VARCHAR(150) NOT NULL,
+    urutan        INTEGER      NOT NULL DEFAULT 0,
+    aktif         BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_division_per_dept UNIQUE (department_id, nama)
+);
+
+CREATE INDEX idx_divisions_dept   ON public.divisions (department_id, aktif, urutan, nama);
+
+-- Seed data awal (bisa diedit/dihapus dari admin panel nanti)
+INSERT INTO public.departments (nama, urutan) VALUES
+    ('General Affairs',     10),
+    ('Finance',             20),
+    ('Human Resources',     30),
+    ('Legal',               40),
+    ('Procurement',         50),
+    ('Operations',          60),
+    ('Engineering',         70),
+    ('Information Technology', 80),
+    ('Marketing',           90),
+    ('Strategic Planning', 100),
+    ('Internal Audit',     110);
+
+INSERT INTO public.divisions (department_id, nama, urutan)
+SELECT d.id, v.nama, v.urutan FROM public.departments d
+JOIN (VALUES
+    ('General Affairs',        'Office Management',     10),
+    ('General Affairs',        'Facility Maintenance',  20),
+    ('General Affairs',        'Vendor Management',     30),
+    ('Finance',                'Accounting',            10),
+    ('Finance',                'Treasury',              20),
+    ('Finance',                'Tax & Compliance',      30),
+    ('Human Resources',        'Recruitment',           10),
+    ('Human Resources',        'People Development',    20),
+    ('Human Resources',        'Compensation & Benefit',30),
+    ('Legal',                  'Corporate Legal',       10),
+    ('Legal',                  'Contract & Compliance', 20),
+    ('Procurement',            'Strategic Sourcing',    10),
+    ('Procurement',            'Tender & Contract',     20),
+    ('Operations',             'Train Operations',      10),
+    ('Operations',             'Station Operations',    20),
+    ('Operations',             'Customer Experience',   30),
+    ('Engineering',            'Rolling Stock',         10),
+    ('Engineering',            'Track & Civil',         20),
+    ('Engineering',            'Signal & Telecom',      30),
+    ('Information Technology', 'Infrastructure',        10),
+    ('Information Technology', 'Application',           20),
+    ('Information Technology', 'Cybersecurity',         30),
+    ('Marketing',              'Brand & Communication', 10),
+    ('Marketing',              'Digital Marketing',     20),
+    ('Strategic Planning',     'Business Development',  10),
+    ('Strategic Planning',     'Performance Management',20),
+    ('Internal Audit',         'Operational Audit',     10),
+    ('Internal Audit',         'IT Audit',              20)
+) AS v(dept_nama, nama, urutan) ON v.dept_nama = d.nama;
+
+
+-- -----------------------------------------------------------------------------
 -- 3b. TABEL: activity_log (audit log seluruh aktivitas admin)
 -- -----------------------------------------------------------------------------
 CREATE TABLE public.activity_log (
@@ -103,6 +184,7 @@ CREATE TABLE public.activity_log (
         'LOGIN','LOGOUT','LOGIN_FAILED',
         'UPDATE_STATUS',
         'STOCK_TAMBAH','STOCK_KURANG','STOCK_EDIT',
+        'MASTER_CREATE','MASTER_UPDATE','MASTER_DELETE',
         'OTHER'
     ))
 );
@@ -128,6 +210,14 @@ CREATE TRIGGER trg_requests_updated
 
 CREATE TRIGGER trg_stock_updated
     BEFORE UPDATE ON public.stock
+    FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER trg_departments_updated
+    BEFORE UPDATE ON public.departments
+    FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+CREATE TRIGGER trg_divisions_updated
+    BEFORE UPDATE ON public.divisions
     FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- -----------------------------------------------------------------------------
@@ -430,6 +520,197 @@ GRANT EXECUTE ON FUNCTION public.adjust_stock(TEXT,INTEGER,TEXT,TEXT) TO authent
 GRANT EXECUTE ON FUNCTION public.set_stock(TEXT,INTEGER,TEXT)        TO authenticated;
 
 -- -----------------------------------------------------------------------------
+-- 7a. FUNCTION: master data CRUD (departments & divisions)
+--     Semua otomatis mencatat aktivitas ke activity_log
+-- -----------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.upsert_department(
+    p_id     BIGINT,    -- NULL untuk create, isi ID untuk update
+    p_nama   TEXT,
+    p_urutan INTEGER DEFAULT 0,
+    p_aktif  BOOLEAN DEFAULT TRUE
+)
+RETURNS public.departments
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+    v_row    public.departments;
+    v_action TEXT;
+    v_old    public.departments;
+BEGIN
+    IF p_nama IS NULL OR length(trim(p_nama)) = 0 THEN
+        RAISE EXCEPTION 'Nama departemen wajib diisi';
+    END IF;
+
+    IF p_id IS NULL THEN
+        INSERT INTO public.departments (nama, urutan, aktif)
+        VALUES (trim(p_nama), COALESCE(p_urutan,0), COALESCE(p_aktif,TRUE))
+        RETURNING * INTO v_row;
+        v_action := 'MASTER_CREATE';
+    ELSE
+        SELECT * INTO v_old FROM public.departments WHERE id = p_id;
+        IF v_old.id IS NULL THEN
+            RAISE EXCEPTION 'Departemen ID % tidak ditemukan', p_id;
+        END IF;
+        UPDATE public.departments
+        SET nama = trim(p_nama), urutan = COALESCE(p_urutan, urutan), aktif = COALESCE(p_aktif, aktif)
+        WHERE id = p_id RETURNING * INTO v_row;
+        v_action := 'MASTER_UPDATE';
+    END IF;
+
+    INSERT INTO public.activity_log (user_email, user_id, action_type, target, description, metadata)
+    VALUES (
+        COALESCE(auth.jwt() ->> 'email', 'unknown'),
+        auth.uid(),
+        v_action,
+        'Departemen: ' || v_row.nama,
+        CASE WHEN v_action = 'MASTER_CREATE'
+             THEN 'Buat departemen baru: ' || v_row.nama
+             ELSE 'Update departemen: ' || COALESCE(v_old.nama,'?') || ' → ' || v_row.nama
+        END,
+        jsonb_build_object('entity','department','id',v_row.id,'nama',v_row.nama,'aktif',v_row.aktif,'old', to_jsonb(v_old))
+    );
+
+    RETURN v_row;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.delete_department(p_id BIGINT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+    v_row public.departments;
+    v_div_count INTEGER;
+BEGIN
+    SELECT * INTO v_row FROM public.departments WHERE id = p_id;
+    IF v_row.id IS NULL THEN
+        RAISE EXCEPTION 'Departemen ID % tidak ditemukan', p_id;
+    END IF;
+
+    SELECT COUNT(*) INTO v_div_count FROM public.divisions WHERE department_id = p_id;
+
+    DELETE FROM public.departments WHERE id = p_id;
+
+    INSERT INTO public.activity_log (user_email, user_id, action_type, target, description, metadata)
+    VALUES (
+        COALESCE(auth.jwt() ->> 'email', 'unknown'),
+        auth.uid(),
+        'MASTER_DELETE',
+        'Departemen: ' || v_row.nama,
+        'Hapus departemen ' || v_row.nama || ' (beserta ' || v_div_count || ' divisi)',
+        jsonb_build_object('entity','department','id',v_row.id,'nama',v_row.nama,'cascaded_divisions',v_div_count)
+    );
+
+    RETURN TRUE;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.upsert_division(
+    p_id            BIGINT,
+    p_department_id BIGINT,
+    p_nama          TEXT,
+    p_urutan        INTEGER DEFAULT 0,
+    p_aktif         BOOLEAN DEFAULT TRUE
+)
+RETURNS public.divisions
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+    v_row     public.divisions;
+    v_old     public.divisions;
+    v_dept    public.departments;
+    v_action  TEXT;
+BEGIN
+    IF p_nama IS NULL OR length(trim(p_nama)) = 0 THEN
+        RAISE EXCEPTION 'Nama divisi wajib diisi';
+    END IF;
+    IF p_department_id IS NULL THEN
+        RAISE EXCEPTION 'Departemen wajib dipilih';
+    END IF;
+
+    SELECT * INTO v_dept FROM public.departments WHERE id = p_department_id;
+    IF v_dept.id IS NULL THEN
+        RAISE EXCEPTION 'Departemen ID % tidak ditemukan', p_department_id;
+    END IF;
+
+    IF p_id IS NULL THEN
+        INSERT INTO public.divisions (department_id, nama, urutan, aktif)
+        VALUES (p_department_id, trim(p_nama), COALESCE(p_urutan,0), COALESCE(p_aktif,TRUE))
+        RETURNING * INTO v_row;
+        v_action := 'MASTER_CREATE';
+    ELSE
+        SELECT * INTO v_old FROM public.divisions WHERE id = p_id;
+        IF v_old.id IS NULL THEN
+            RAISE EXCEPTION 'Divisi ID % tidak ditemukan', p_id;
+        END IF;
+        UPDATE public.divisions
+        SET department_id = p_department_id,
+            nama   = trim(p_nama),
+            urutan = COALESCE(p_urutan, urutan),
+            aktif  = COALESCE(p_aktif,  aktif)
+        WHERE id = p_id RETURNING * INTO v_row;
+        v_action := 'MASTER_UPDATE';
+    END IF;
+
+    INSERT INTO public.activity_log (user_email, user_id, action_type, target, description, metadata)
+    VALUES (
+        COALESCE(auth.jwt() ->> 'email', 'unknown'),
+        auth.uid(),
+        v_action,
+        'Divisi: ' || v_row.nama || ' (' || v_dept.nama || ')',
+        CASE WHEN v_action = 'MASTER_CREATE'
+             THEN 'Buat divisi baru: ' || v_row.nama || ' di ' || v_dept.nama
+             ELSE 'Update divisi: ' || COALESCE(v_old.nama,'?') || ' → ' || v_row.nama
+        END,
+        jsonb_build_object('entity','division','id',v_row.id,'department_id',v_row.department_id,'nama',v_row.nama,'aktif',v_row.aktif,'old',to_jsonb(v_old))
+    );
+
+    RETURN v_row;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.delete_division(p_id BIGINT)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+    v_row  public.divisions;
+    v_dept public.departments;
+BEGIN
+    SELECT * INTO v_row FROM public.divisions WHERE id = p_id;
+    IF v_row.id IS NULL THEN
+        RAISE EXCEPTION 'Divisi ID % tidak ditemukan', p_id;
+    END IF;
+    SELECT * INTO v_dept FROM public.departments WHERE id = v_row.department_id;
+
+    DELETE FROM public.divisions WHERE id = p_id;
+
+    INSERT INTO public.activity_log (user_email, user_id, action_type, target, description, metadata)
+    VALUES (
+        COALESCE(auth.jwt() ->> 'email', 'unknown'),
+        auth.uid(),
+        'MASTER_DELETE',
+        'Divisi: ' || v_row.nama || ' (' || COALESCE(v_dept.nama,'?') || ')',
+        'Hapus divisi ' || v_row.nama || ' dari ' || COALESCE(v_dept.nama,'?'),
+        jsonb_build_object('entity','division','id',v_row.id,'department_id',v_row.department_id,'nama',v_row.nama)
+    );
+
+    RETURN TRUE;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.upsert_department(BIGINT,TEXT,INTEGER,BOOLEAN)         TO authenticated;
+GRANT EXECUTE ON FUNCTION public.delete_department(BIGINT)                              TO authenticated;
+GRANT EXECUTE ON FUNCTION public.upsert_division(BIGINT,BIGINT,TEXT,INTEGER,BOOLEAN)    TO authenticated;
+GRANT EXECUTE ON FUNCTION public.delete_division(BIGINT)                                TO authenticated;
+
+
+-- -----------------------------------------------------------------------------
 -- 7b. FUNCTION: log_activity (dipanggil frontend untuk LOGIN/LOGOUT)
 -- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.log_activity(
@@ -498,7 +779,9 @@ GRANT SELECT ON public.v_monthly_stats     TO anon, authenticated;
 ALTER TABLE public.requests  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stock_log ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.activity_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.activity_log  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.departments   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.divisions     ENABLE ROW LEVEL SECURITY;
 
 -- requests: anon dapat INSERT (via RPC) & SELECT (untuk tracking & stats); authenticated bisa semua
 CREATE POLICY "anon_select_requests"   ON public.requests FOR SELECT TO anon          USING (true);
@@ -519,6 +802,12 @@ CREATE POLICY "auth_all_stock_log"     ON public.stock_log FOR ALL    TO authent
 -- activity_log: HANYA authenticated (privacy — anon tidak boleh lihat siapa yang login kapan)
 CREATE POLICY "auth_select_activity"   ON public.activity_log FOR SELECT TO authenticated USING (true);
 CREATE POLICY "auth_insert_activity"   ON public.activity_log FOR INSERT TO authenticated WITH CHECK (true);
+
+-- departments & divisions: anon SELECT only (untuk form publik), authenticated full
+CREATE POLICY "anon_select_departments"  ON public.departments FOR SELECT TO anon          USING (aktif = TRUE);
+CREATE POLICY "auth_all_departments"     ON public.departments FOR ALL    TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "anon_select_divisions"    ON public.divisions   FOR SELECT TO anon          USING (aktif = TRUE);
+CREATE POLICY "auth_all_divisions"       ON public.divisions   FOR ALL    TO authenticated USING (true) WITH CHECK (true);
 
 -- -----------------------------------------------------------------------------
 -- 10. SAMPLE DATA (opsional - hapus blok ini bila tidak diperlukan)
