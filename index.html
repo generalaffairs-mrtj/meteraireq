@@ -4,8 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0F4C81" />
-<meta name="description" content="Platform Permintaan Meterai - General Affairs Department" />
-<title>Permintaan Meterai · General Affairs</title>
+<meta name="description" content="Portal Inventori Meterai dan ATK - General Affairs Department" />
+<title>Portal Inventori Meterai &amp; ATK · General Affairs</title>
 
 <!-- PWA Manifest (embedded as data URL so file ini self-contained) -->
 <link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Permintaan Meterai - GA","short_name":"Meterai GA","description":"Platform Permintaan Meterai General Affairs Department","start_url":"./","scope":"./","display":"standalone","orientation":"portrait","background_color":"%23F7F9FC","theme_color":"%230F4C81","icons":[{"src":"data:image/svg%2Bxml;utf8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27%3E%3Crect width=%27512%27 height=%27512%27 rx=%27110%27 fill=%27%230F4C81%27/%3E%3Ccircle cx=%27256%27 cy=%27256%27 r=%27170%27 fill=%27none%27 stroke=%27%2300A651%27 stroke-width=%2714%27/%3E%3Ctext x=%27256%27 y=%27330%27 font-family=%27Arial Black,sans-serif%27 font-size=%27220%27 font-weight=%27900%27 text-anchor=%27middle%27 fill=%27white%27%3EM%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}' />
@@ -323,6 +323,7 @@ a:hover{text-decoration:underline;}
   border-color:var(--c-primary);
   box-shadow:0 0 0 4px var(--c-primary-50);
 }
+.select.sm,.input.sm{padding:8px 12px;font-size:13px;width:auto;min-width:160px;}
 .input.readonly,.input[readonly]{
   background:var(--c-primary-50);
   border-color:var(--c-primary-100);
@@ -380,6 +381,10 @@ a:hover{text-decoration:underline;}
 }
 .tracking-card-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
 .tracking-code{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:15px;font-weight:700;color:var(--c-primary-700);background:var(--c-primary-50);padding:5px 10px;border-radius:6px;}
+.kode-badge{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;font-weight:700;color:var(--c-primary-700);background:var(--c-primary-50);padding:3px 7px;border-radius:5px;letter-spacing:.02em;display:inline-block;white-space:nowrap;}
+.select.sm,.input.sm{padding:6px 10px;font-size:12.5px;height:32px;}
+.checkbox{display:inline-flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;}
+.checkbox input{width:16px;height:16px;cursor:pointer;}
 .tracking-detail{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 16px;margin-top:8px;}
 .tracking-detail .item .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--c-text-muted);font-weight:600;}
 .tracking-detail .item .val{font-size:14px;color:var(--c-text);font-weight:500;margin-top:2px;}
@@ -562,6 +567,33 @@ a:hover{text-decoration:underline;}
 .sidebar-nav{flex:1;padding:14px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
 .nav-section-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:14px 14px 6px;}
 .sidebar.mini .nav-section-title{display:none;}
+
+/* Submenu group (collapsible) */
+.nav-group{display:flex;flex-direction:column;}
+.nav-group-toggle{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;
+  color:rgba(255,255,255,.85);font-size:14px;font-weight:600;cursor:pointer;
+  transition:all .15s;user-select:none;border:none;background:transparent;text-align:left;width:100%;
+}
+.nav-group-toggle:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-group-toggle .material-symbols-rounded{font-size:22px;flex-shrink:0;}
+.nav-group-toggle .chevron{margin-left:auto;font-size:18px;transition:transform .2s;opacity:.6;}
+.nav-group.open .nav-group-toggle .chevron{transform:rotate(180deg);}
+.nav-group .submenu{
+  display:none;flex-direction:column;gap:2px;padding-left:20px;
+  border-left:1px solid rgba(255,255,255,.1);margin:2px 0 6px 24px;
+}
+.nav-group.open .submenu{display:flex;}
+.nav-group .submenu .nav-item{padding:8px 12px;font-size:13px;}
+.nav-group .submenu .nav-item .material-symbols-rounded{font-size:18px;}
+.sidebar.mini .nav-group-toggle .chevron,
+.sidebar.mini .nav-group-toggle span:not(.material-symbols-rounded){display:none;}
+.sidebar.mini .nav-group .submenu{
+  position:absolute;left:60px;top:0;background:#0a3b66;
+  border-radius:10px;padding:8px;min-width:200px;border-left:none;margin:0;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
+.sidebar.mini .nav-group:hover .submenu{display:flex;}
 .nav-item{
   display:flex;align-items:center;gap:12px;
   padding:10px 14px;border-radius:9px;color:rgba(255,255,255,.78);
@@ -765,15 +797,17 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
     <div class="container">
       <div class="brand">
         <div class="brand-text-wrap">
-          <span class="brand-text">Permintaan Meterai</span>
+          <span class="brand-text">Portal Inventori Meterai &amp; ATK</span>
           <span class="brand-sub">General Affairs Department</span>
         </div>
       </div>
       <nav class="nav-links">
-        <a href="#statistik"  class="nav-link">Statistik</a>
-        <a href="#permintaan" class="nav-link">Permintaan</a>
-        <a href="#tracking"   class="nav-link">Tracking</a>
-        <a href="#cara"       class="nav-link">Cara Pakai</a>
+        <a href="#statistik"      class="nav-link">Statistik Meterai</a>
+        <a href="#permintaan"     class="nav-link">Form Meterai</a>
+        <a href="#statistik-atk"  class="nav-link">Statistik ATK</a>
+        <a href="#permintaan-atk" class="nav-link">Form ATK</a>
+        <a href="#tracking"       class="nav-link">Tracking</a>
+        <a href="#cara"           class="nav-link">Cara Pakai</a>
         <button class="btn btn-outline btn-sm" onclick="ui.openLogin()">
           <span class="material-symbols-rounded icon-sm">admin_panel_settings</span>
           <span>Login</span>
@@ -785,7 +819,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
   <!-- HERO -->
   <section class="hero">
     <div class="container hero-inner">
-      <h1>Platform Pengajuan Meterai <br><span class="accent">General Affairs</span></h1>
+      <h1>Portal Inventori Meterai dan ATK <br><span class="accent">General Affairs</span></h1>
       <div class="hero-cta">
         <a href="#permintaan" class="btn btn-primary btn-lg">
           <span class="material-symbols-rounded">edit_document</span>
@@ -881,10 +915,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
           <div class="field">
             <label>Lokasi Kerja <span class="req">*</span></label>
             <select class="select" id="f-lokasi" required>
-              <option value="">— Pilih Lokasi —</option>
-              <option>Wisma Nusantara</option>
-              <option>Transport Hub</option>
-              <option>Depo Lebak Bulus</option>
+              <option value="">— Memuat… —</option>
             </select>
           </div>
 
@@ -930,12 +961,12 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="section-head">
         <span class="section-eyebrow">Tracking</span>
         <h2 class="section-title">Lacak Permintaan Anda</h2>
-        <p class="section-desc">Masukkan kode permintaan untuk mengetahui status pengajuan Anda!</p>
+        <p class="section-desc">Masukkan kode permintaan untuk mengetahui status pengajuan. Berlaku untuk Meterai dan ATK.</p>
       </div>
 
       <div class="tracking-wrap">
         <form class="search-bar" id="form-tracking">
-          <input type="text" class="input" id="t-kode" placeholder="MET-07052026001" autocomplete="off" required style="font-family:'JetBrains Mono',ui-monospace,monospace;letter-spacing:.05em;" />
+          <input type="text" class="input" id="t-kode" placeholder="MET-08052026001 atau ATK-08052026001" autocomplete="off" required style="font-family:'JetBrains Mono',ui-monospace,monospace;letter-spacing:.05em;" />
           <button type="submit" class="btn btn-primary" aria-label="Cari">
             <span class="material-symbols-rounded">search</span>
             <span class="hide-sm">Cari</span>
@@ -946,38 +977,159 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
     </div>
   </section>
 
+  <!-- ATK STATISTIK -->
+  <section class="section" id="statistik-atk" style="background:linear-gradient(180deg,transparent,var(--c-bg));">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-eyebrow">Inventori ATK</span>
+        <h2 class="section-title">Statistik Permintaan ATK</h2>
+        <p class="section-desc">Data real-time permintaan barang ATK dari seluruh unit kerja.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-icon"><span class="material-symbols-rounded icon-fill">edit_note</span></div>
+          <div class="stat-label">Total ATK Keluar</div>
+          <div class="stat-value" id="atk-pub-keluar">—</div>
+          <div class="stat-meta">Pengeluaran kumulatif</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon"><span class="material-symbols-rounded icon-fill">trending_up</span></div>
+          <div class="stat-label">Permintaan Bulan Ini</div>
+          <div class="stat-value" id="atk-pub-bulan">—</div>
+          <div class="stat-meta" id="atk-pub-bulan-label">—</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon"><span class="material-symbols-rounded icon-fill">pending</span></div>
+          <div class="stat-label">Pending</div>
+          <div class="stat-value" id="atk-pub-pending">—</div>
+          <div class="stat-meta">Menunggu disiapkan</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon"><span class="material-symbols-rounded icon-fill">inventory</span></div>
+          <div class="stat-label">Total Item</div>
+          <div class="stat-value" id="atk-pub-items">—</div>
+          <div class="stat-meta">Jenis barang tersedia</div>
+        </div>
+      </div>
+
+      <div class="chart-card" style="margin-top:24px;">
+        <div class="chart-card-head">
+          <h3>Permintaan ATK per Departemen</h3>
+          <select class="select sm" id="atk-pub-bulan-sel"></select>
+        </div>
+        <canvas id="atk-pub-chart" height="100"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATK FORM PERMINTAAN -->
+  <section class="section" id="permintaan-atk" style="background:linear-gradient(180deg,transparent,var(--c-secondary-50));">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-eyebrow">Form ATK</span>
+        <h2 class="section-title">Form Permintaan ATK</h2>
+        <p class="section-desc">Isi data berikut. Anda bisa minta beberapa barang sekaligus dalam satu permintaan.</p>
+      </div>
+
+      <form class="form-card" id="form-atk" novalidate>
+        <div class="form-grid">
+          <div class="field full">
+            <label>Kode Permintaan <span class="text-muted">(otomatis)</span></label>
+            <input type="text" class="input readonly" id="fa-kode" readonly placeholder="ATK-DDMMYYYY###" tabindex="-1" />
+          </div>
+
+          <div class="field">
+            <label>Nama Pemohon <span class="req">*</span></label>
+            <input type="text" class="input" id="fa-nama" maxlength="150" required autocomplete="name" />
+          </div>
+
+          <div class="field">
+            <label>Departemen <span class="req">*</span></label>
+            <select class="select" id="fa-dept" required>
+              <option value="">— Memuat… —</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Divisi <span class="req">*</span></label>
+            <select class="select" id="fa-divisi" required disabled>
+              <option value="">— Pilih departemen dulu —</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Lokasi Kerja <span class="req">*</span></label>
+            <select class="select" id="fa-lokasi" required>
+              <option value="">— Memuat… —</option>
+            </select>
+          </div>
+
+          <div class="field full">
+            <label>Daftar Barang <span class="req">*</span></label>
+            <div id="fa-items" style="display:flex;flex-direction:column;gap:10px;"></div>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="masterDataAtk.addItem()" style="margin-top:8px;align-self:flex-start;">
+              <span class="material-symbols-rounded icon-sm">add</span>
+              <span>Tambah Barang</span>
+            </button>
+          </div>
+
+          <div class="field full">
+            <label>Tujuan Penggunaan <span class="req">*</span></label>
+            <textarea class="textarea" id="fa-tujuan" maxlength="500" required placeholder="Contoh: Kebutuhan operasional admin selama Mei 2026"></textarea>
+          </div>
+
+          <div class="field full">
+            <label class="check">
+              <input type="checkbox" id="fa-confirm" required>
+              <span>Saya menyatakan bahwa data yang diisi di atas adalah benar.</span>
+            </label>
+          </div>
+
+          <div class="field full" style="margin-top:8px;">
+            <button type="submit" class="btn btn-primary btn-lg btn-block" id="btn-submit-atk">
+              <span class="material-symbols-rounded">send</span>
+              <span>Submit Permintaan ATK</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
   <!-- CARA PAKAI -->
   <section class="section" id="cara">
     <div class="container">
       <div class="section-head">
         <span class="section-eyebrow">Panduan</span>
         <h2 class="section-title">Cara Penggunaan Platform</h2>
+        <p class="section-desc">Empat langkah sederhana, berlaku untuk permintaan Meterai dan ATK.</p>
       </div>
 
       <div class="steps">
         <div class="step">
           <div class="step-num">1</div>
           <div class="step-icon"><span class="material-symbols-rounded icon-fill">edit_note</span></div>
-          <h4>Isi Form Permintaan</h4>
-          <p>Lengkapi data pemohon, departemen, jumlah meterai, dan tujuan penggunaan dengan benar.</p>
+          <h4>Pilih Form &amp; Isi Data</h4>
+          <p>Pilih Form Meterai atau Form ATK sesuai kebutuhan. Isi data pemohon, unit kerja, dan detail permintaan.</p>
         </div>
         <div class="step">
           <div class="step-num">2</div>
           <div class="step-icon"><span class="material-symbols-rounded icon-fill">qr_code_2</span></div>
           <h4>Simpan Kode Unik</h4>
-          <p>Sistem akan memberikan kode permintaan otomatis setelah Anda submit. Salin atau catat kode ini.</p>
+          <p>Sistem otomatis memberikan kode <code>MET-...</code> untuk meterai atau <code>ATK-...</code> untuk ATK setelah submit.</p>
         </div>
         <div class="step">
           <div class="step-num">3</div>
           <div class="step-icon"><span class="material-symbols-rounded icon-fill">manage_search</span></div>
           <h4>Lacak Status</h4>
-          <p>Gunakan fitur tracking untuk memantau status permintaan: dikonfirmasi, disiapkan, hingga tersedia.</p>
+          <p>Gunakan fitur tracking dengan kode tersebut untuk memantau status: dikonfirmasi → disiapkan → tersedia.</p>
         </div>
         <div class="step">
           <div class="step-num">4</div>
           <div class="step-icon"><span class="material-symbols-rounded icon-fill">redeem</span></div>
-          <h4>Ambil Meterai</h4>
-          <p>Setelah status “Tersedia”, ambil meterai di lokasi GA sesuai unit kerja yang dipilih.</p>
+          <h4>Ambil Barang</h4>
+          <p>Setelah status "Tersedia", ambil meterai/ATK di lokasi GA sesuai unit kerja yang dipilih.</p>
         </div>
       </div>
     </div>
@@ -1009,21 +1161,63 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
         </div>
       </div>
       <nav class="sidebar-nav">
-        <div class="nav-section-title">Menu Utama</div>
-        <a class="nav-item active" data-view="dashboard"  onclick="admin.showView('dashboard')">
-          <span class="material-symbols-rounded">dashboard</span><span>Dashboard</span>
+        <div class="nav-section-title">Statistik</div>
+        <a class="nav-item active" data-view="dashboard-meterai" onclick="admin.showView('dashboard-meterai')">
+          <span class="material-symbols-rounded">stamp</span><span>Statistik Meterai</span>
         </a>
-        <a class="nav-item"        data-view="permintaan" onclick="admin.showView('permintaan')">
-          <span class="material-symbols-rounded">list_alt</span><span>Data Permintaan</span>
+        <a class="nav-item"        data-view="dashboard-atk"     onclick="admin.showView('dashboard-atk')">
+          <span class="material-symbols-rounded">edit_note</span><span>Statistik ATK</span>
         </a>
-        <a class="nav-item"        data-view="stock"      onclick="admin.showView('stock')">
-          <span class="material-symbols-rounded">inventory_2</span><span>Stok Meterai</span>
-        </a>
-        <a class="nav-item"        data-view="master"     onclick="admin.showView('master')">
+
+        <div class="nav-section-title">Modul Meterai</div>
+        <div class="nav-group" id="grp-meterai">
+          <button class="nav-group-toggle" onclick="admin.toggleGroup('grp-meterai')">
+            <span class="material-symbols-rounded">approval</span>
+            <span>Meterai</span>
+            <span class="material-symbols-rounded chevron">expand_more</span>
+          </button>
+          <div class="submenu">
+            <a class="nav-item" data-view="permintaan" onclick="admin.showView('permintaan')">
+              <span class="material-symbols-rounded">list_alt</span><span>Permintaan</span>
+            </a>
+            <a class="nav-item" data-view="stock" onclick="admin.showView('stock')">
+              <span class="material-symbols-rounded">inventory_2</span><span>Stok Meterai</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section-title">Modul ATK</div>
+        <div class="nav-group" id="grp-atk">
+          <button class="nav-group-toggle" onclick="admin.toggleGroup('grp-atk')">
+            <span class="material-symbols-rounded">edit</span>
+            <span>ATK</span>
+            <span class="material-symbols-rounded chevron">expand_more</span>
+          </button>
+          <div class="submenu">
+            <a class="nav-item" data-view="atk-permintaan" onclick="admin.showView('atk-permintaan')">
+              <span class="material-symbols-rounded">list_alt</span><span>Permintaan ATK</span>
+            </a>
+            <a class="nav-item" data-view="atk-stock" onclick="admin.showView('atk-stock')">
+              <span class="material-symbols-rounded">inventory</span><span>Stok ATK</span>
+            </a>
+            <a class="nav-item" data-view="atk-stock-in" onclick="admin.showView('atk-stock-in')">
+              <span class="material-symbols-rounded">add_box</span><span>Barang Masuk</span>
+            </a>
+            <a class="nav-item" data-view="atk-master" onclick="admin.showView('atk-master')">
+              <span class="material-symbols-rounded">category</span><span>Master ATK</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="nav-section-title">Pengaturan</div>
+        <a class="nav-item" data-view="master" onclick="admin.showView('master')">
           <span class="material-symbols-rounded">account_tree</span><span>Master Data</span>
         </a>
-        <a class="nav-item"        data-view="activity"   onclick="admin.showView('activity')">
+        <a class="nav-item" data-view="activity" onclick="admin.showView('activity')">
           <span class="material-symbols-rounded">manage_history</span><span>Log Aktivitas</span>
+        </a>
+        <a class="nav-item" data-view="changelog" onclick="admin.showView('changelog')">
+          <span class="material-symbols-rounded">update</span><span>Riwayat Versi</span>
         </a>
 
         <div class="nav-section-title">Lainnya</div>
@@ -1034,7 +1228,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <div class="sidebar-foot">
         <div style="font-size:11px;color:rgba(255,255,255,.5);text-align:center;line-height:1.4;">
           <div id="admin-user-email" style="font-weight:600;color:rgba(255,255,255,.8);margin-bottom:2px;">—</div>
-          v1.0 · GA Department
+          v2.0 · GA Department
         </div>
       </div>
     </aside>
@@ -1057,8 +1251,8 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
 
       <div class="admin-content">
 
-        <!-- VIEW: DASHBOARD -->
-        <div class="admin-view" id="view-dashboard">
+        <!-- VIEW: STATISTIK METERAI (was Dashboard) -->
+        <div class="admin-view" id="view-dashboard-meterai">
           <div class="stats-grid" style="margin-bottom:24px;">
             <div class="stat-card blue">
               <div class="stat-icon"><span class="material-symbols-outlined">bar_chart_4_bars</span></div>
@@ -1173,7 +1367,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
 
         <!-- VIEW: MASTER DATA (Departemen & Divisi) -->
         <div class="admin-view" id="view-master" hidden>
-          <div class="master-grid">
+          <div class="master-grid" style="grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));">
             <!-- DEPARTEMEN -->
             <div class="table-card">
               <div class="table-toolbar">
@@ -1217,6 +1411,28 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
                 <table class="data" id="div-table">
                   <thead>
                     <tr><th style="width:50px;">#</th><th>Nama Divisi</th><th>Departemen</th><th style="width:90px;">Status</th><th style="width:110px;">Aksi</th></tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- LOKASI KERJA -->
+            <div class="table-card">
+              <div class="table-toolbar">
+                <div>
+                  <h3>Lokasi Kerja</h3>
+                  <div class="text-sm text-muted">Lokasi terintegrasi (meterai &amp; ATK)</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="admin.openLocationModal(null)">
+                  <span class="material-symbols-rounded icon-sm">add</span>
+                  <span>Tambah</span>
+                </button>
+              </div>
+              <div class="table-wrap">
+                <table class="data" id="loc-table">
+                  <thead>
+                    <tr><th style="width:50px;">#</th><th>Nama</th><th>Keterangan</th><th style="width:90px;">Status</th><th style="width:110px;">Aksi</th></tr>
                   </thead>
                   <tbody></tbody>
                 </table>
@@ -1268,6 +1484,325 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
               </table>
             </div>
             <div class="pagination" id="activity-pagination"></div>
+          </div>
+        </div>
+
+        <!-- VIEW: STATISTIK ATK -->
+        <div class="admin-view" id="view-dashboard-atk" hidden>
+          <div class="stats-grid" style="margin-bottom:24px;">
+            <div class="stat-card blue">
+              <div class="stat-icon"><span class="material-symbols-rounded icon-fill">edit_note</span></div>
+              <div class="stat-label">Total ATK Keluar</div>
+              <div class="stat-value" id="atk-dash-keluar">—</div>
+              <div class="stat-meta">Status "Selesai"</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-icon"><span class="material-symbols-rounded icon-fill">trending_up</span></div>
+              <div class="stat-label">Permintaan Bulan Ini</div>
+              <div class="stat-value" id="atk-dash-bulan">—</div>
+              <div class="stat-meta" id="atk-dash-bulan-label">—</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-icon"><span class="material-symbols-rounded icon-fill">pending</span></div>
+              <div class="stat-label">Pending</div>
+              <div class="stat-value" id="atk-dash-pending">—</div>
+              <div class="stat-meta">Belum/Disiapkan/Tersedia</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-icon"><span class="material-symbols-rounded icon-fill">inventory</span></div>
+              <div class="stat-label">Total Item ATK</div>
+              <div class="stat-value" id="atk-dash-items">—</div>
+              <div class="stat-meta"><span id="atk-dash-menipis">—</span> item menipis</div>
+            </div>
+          </div>
+
+          <div class="chart-card" style="margin-bottom:24px;">
+            <div class="chart-card-head">
+              <h3>Top Departemen Permintaan ATK</h3>
+              <select class="select sm" id="atk-chart-bulan" onchange="admin.loadAtkDashboard()"></select>
+            </div>
+            <canvas id="atk-chart" height="120"></canvas>
+          </div>
+
+          <div class="table-card">
+            <div class="table-toolbar">
+              <h3>Permintaan ATK Pending</h3>
+              <div class="text-sm text-muted">5 terbaru yang perlu diproses</div>
+            </div>
+            <div class="table-wrap">
+              <table class="data" id="atk-pending-table">
+                <thead><tr><th>Kode</th><th>Pemohon</th><th>Lokasi</th><th>Items</th><th>Status</th><th>Tanggal</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="atk-pending-pagination"></div>
+          </div>
+        </div>
+
+        <!-- VIEW: PERMINTAAN ATK -->
+        <div class="admin-view" id="view-atk-permintaan" hidden>
+          <div class="table-card">
+            <div class="table-toolbar" style="flex-wrap:wrap; gap:10px;">
+              <div>
+                <h3>Data Permintaan ATK</h3>
+                <div class="text-sm text-muted">Daftar lengkap permintaan barang ATK</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="search" class="input" id="atk-req-search" placeholder="Cari kode/pemohon/lokasi…" style="min-width:220px;" />
+                <select class="select" id="atk-req-filter-status" style="min-width:170px;">
+                  <option value="">Semua Status</option>
+                  <option>Belum Dikonfirmasi</option>
+                  <option>Sedang Disiapkan</option>
+                  <option>Tersedia</option>
+                  <option>Ditolak</option>
+                  <option>Selesai</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data" id="atk-req-table">
+                <thead><tr><th>Kode</th><th>Pemohon</th><th>Departemen</th><th>Lokasi</th><th>Total</th><th>Status</th><th>Tanggal</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="atk-req-pagination"></div>
+          </div>
+        </div>
+
+        <!-- VIEW: STOK ATK -->
+        <div class="admin-view" id="view-atk-stock" hidden>
+          <div class="table-card">
+            <div class="table-toolbar" style="flex-wrap:wrap; gap:10px;">
+              <div>
+                <h3>Stok ATK per Lokasi</h3>
+                <div class="text-sm text-muted">Lihat & kelola stok barang ATK</div>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <select class="select" id="atk-stock-filter-loc" style="min-width:170px;">
+                  <option value="">Semua Lokasi</option>
+                </select>
+                <select class="select" id="atk-stock-filter-cat" style="min-width:160px;">
+                  <option value="">Semua Kategori</option>
+                </select>
+                <input type="search" class="input" id="atk-stock-search" placeholder="Cari nama/brand…" style="min-width:180px;" />
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data" id="atk-stock-table">
+                <thead><tr><th>Lokasi</th><th>Kategori</th><th>Nama</th><th>Brand</th><th>Satuan</th><th>Stok</th><th>Min</th><th>Status</th><th></th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="atk-stock-pagination"></div>
+          </div>
+
+          <div class="table-card" style="margin-top:20px;">
+            <div class="table-toolbar">
+              <h3>Riwayat Mutasi Stok ATK</h3>
+              <div class="text-sm text-muted">Audit log seluruh perubahan stok ATK</div>
+            </div>
+            <div class="table-wrap">
+              <table class="data" id="atk-mov-table">
+                <thead><tr><th>Tanggal</th><th>Tipe</th><th>Nama</th><th>Lokasi</th><th>Sebelum</th><th>Perubahan</th><th>Sesudah</th><th>Keterangan</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="atk-mov-pagination"></div>
+          </div>
+        </div>
+
+        <!-- VIEW: BARANG MASUK ATK -->
+        <div class="admin-view" id="view-atk-stock-in" hidden>
+          <div class="table-card">
+            <div class="table-toolbar">
+              <div>
+                <h3>Catat Barang Masuk</h3>
+                <div class="text-sm text-muted">Tambah stok ATK dari pembelian/restock</div>
+              </div>
+            </div>
+            <div style="padding:8px 4px;">
+              <div class="form-row" style="display:grid;grid-template-columns:1.5fr 1fr 2fr;gap:12px;align-items:end;margin-bottom:14px;">
+                <div class="field">
+                  <label>Pilih Item ATK <span class="req">*</span></label>
+                  <select class="select" id="in-item">
+                    <option value="">— Pilih barang —</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Jumlah Masuk <span class="req">*</span></label>
+                  <input type="number" class="input" id="in-jumlah" min="1" max="99999" value="1" />
+                </div>
+                <div class="field">
+                  <label>Keterangan <span class="req">*</span></label>
+                  <input type="text" class="input" id="in-keterangan" placeholder="mis. PO-2026-045 dari Vendor X" />
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="admin.submitStockIn()" id="btn-stock-in">
+                <span class="material-symbols-rounded icon-sm">add_box</span>
+                <span>Catat Barang Masuk</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card" style="margin-top:20px;">
+            <div class="table-toolbar">
+              <h3>Riwayat Barang Masuk</h3>
+              <div class="text-sm text-muted">10 transaksi terbaru</div>
+            </div>
+            <div class="table-wrap">
+              <table class="data" id="atk-in-history">
+                <thead><tr><th>Tanggal</th><th>Item</th><th>Lokasi</th><th>Jumlah</th><th>User</th><th>Keterangan</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: MASTER ATK (kategori + items) -->
+        <div class="admin-view" id="view-atk-master" hidden>
+          <div class="master-grid">
+            <div class="table-card">
+              <div class="table-toolbar">
+                <div>
+                  <h3>Kategori ATK</h3>
+                  <div class="text-sm text-muted">Pengelompokan barang</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="admin.openAtkCatModal(null)">
+                  <span class="material-symbols-rounded icon-sm">add</span>
+                  <span>Tambah</span>
+                </button>
+              </div>
+              <div class="table-wrap">
+                <table class="data" id="atk-cat-table">
+                  <thead><tr><th style="width:50px">#</th><th>Nama</th><th>Status</th><th style="width:110px">Aksi</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="table-card">
+              <div class="table-toolbar" style="flex-wrap:wrap; gap:10px;">
+                <div>
+                  <h3>Item ATK</h3>
+                  <div class="text-sm text-muted">Master barang per lokasi</div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <select class="select" id="atk-item-filter-loc" style="min-width:170px;">
+                    <option value="">Semua Lokasi</option>
+                  </select>
+                  <button class="btn btn-primary btn-sm" onclick="admin.openAtkItemModal(null)">
+                    <span class="material-symbols-rounded icon-sm">add</span>
+                    <span>Tambah</span>
+                  </button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data" id="atk-item-table">
+                  <thead><tr><th>Nama</th><th>Brand</th><th>Kategori</th><th>Lokasi</th><th>Satuan</th><th>Stok</th><th>Status</th><th style="width:110px">Aksi</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW: RIWAYAT VERSI -->
+        <div class="admin-view" id="view-changelog" hidden>
+          <div class="table-card">
+            <div style="padding:6px 8px 18px;">
+              <h3 style="margin-top:0">Tentang Platform</h3>
+              <p style="color:var(--c-text-muted);font-size:14px;line-height:1.6;">
+                <strong>Portal Inventori Meterai &amp; ATK</strong> adalah platform internal General Affairs Department untuk pengajuan, pelacakan, dan pengelolaan inventori meterai dan barang ATK. Platform ini menggantikan proses manual dan tools terpisah (spreadsheet, form fisik) menjadi satu sistem terintegrasi berbasis web yang dapat diakses dari komputer maupun mobile.
+              </p>
+              <p style="color:var(--c-text-muted);font-size:14px;line-height:1.6;">
+                Dibangun dengan arsitektur modern: Progressive Web App (PWA) untuk frontend, Supabase (PostgreSQL) untuk backend, dengan Row Level Security, audit log lengkap, dan sinkronisasi stok otomatis.
+              </p>
+            </div>
+          </div>
+
+          <div class="table-card" style="margin-top:20px;">
+            <div style="padding:8px;">
+              <h3 style="margin-top:0;margin-bottom:16px;">Riwayat Versi</h3>
+
+              <div class="changelog-entry" style="border-left:3px solid var(--c-secondary);padding:0 16px 18px;margin-bottom:18px;position:relative;">
+                <div style="position:absolute;left:-7px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--c-secondary);border:2px solid var(--c-surface);"></div>
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+                  <h4 style="margin:0;color:var(--c-primary);">v2.0.0</h4>
+                  <span class="chip selesai" style="font-size:10px;">Current</span>
+                  <span class="text-sm text-muted">8 Mei 2026</span>
+                </div>
+                <p style="margin:0 0 8px;font-weight:600;">Integrasi modul ATK</p>
+                <ul style="margin:6px 0 0 16px;font-size:13px;color:var(--c-text-muted);line-height:1.7;">
+                  <li>Modul ATK terintegrasi: kode permintaan ATK-DDMMYYYY###, sinkronisasi stok otomatis, flow status sama dengan meterai</li>
+                  <li>Master Lokasi Kerja terintegrasi (dipakai meterai dan ATK)</li>
+                  <li>Statistik Meterai dan Statistik ATK terpisah di sidebar</li>
+                  <li>Master ATK: kategori dan item dengan stok per lokasi, brand, satuan, minimum</li>
+                  <li>Catatan Barang Masuk untuk restock ATK</li>
+                  <li>Halaman Riwayat Versi (yang sedang Anda lihat)</li>
+                  <li>Landing page baru: Portal Inventori Meterai &amp; ATK dengan section ATK lengkap</li>
+                </ul>
+              </div>
+
+              <div class="changelog-entry" style="border-left:3px solid var(--c-border);padding:0 16px 18px;margin-bottom:18px;position:relative;">
+                <div style="position:absolute;left:-7px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--c-border);border:2px solid var(--c-surface);"></div>
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+                  <h4 style="margin:0;color:var(--c-primary);">v1.3.0</h4>
+                  <span class="text-sm text-muted">8 Mei 2026</span>
+                </div>
+                <p style="margin:0 0 8px;font-weight:600;">Master data Departemen &amp; Divisi</p>
+                <ul style="margin:6px 0 0 16px;font-size:13px;color:var(--c-text-muted);line-height:1.7;">
+                  <li>Halaman Master Data dengan CRUD departemen &amp; divisi (struktur bertingkat)</li>
+                  <li>Form publik: input text → dropdown bertingkat (anti typo)</li>
+                  <li>Cascade delete: hapus departemen otomatis hapus divisinya (dengan peringatan)</li>
+                </ul>
+              </div>
+
+              <div class="changelog-entry" style="border-left:3px solid var(--c-border);padding:0 16px 18px;margin-bottom:18px;position:relative;">
+                <div style="position:absolute;left:-7px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--c-border);border:2px solid var(--c-surface);"></div>
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+                  <h4 style="margin:0;color:var(--c-primary);">v1.2.0</h4>
+                  <span class="text-sm text-muted">8 Mei 2026</span>
+                </div>
+                <p style="margin:0 0 8px;font-weight:600;">Log aktivitas admin</p>
+                <ul style="margin:6px 0 0 16px;font-size:13px;color:var(--c-text-muted);line-height:1.7;">
+                  <li>Audit trail lengkap: login, logout, update status, mutasi stok, master data</li>
+                  <li>Filter per jenis aksi, pencarian bebas, pagination</li>
+                  <li>Auto-log dari semua RPC functions (DB-level)</li>
+                </ul>
+              </div>
+
+              <div class="changelog-entry" style="border-left:3px solid var(--c-border);padding:0 16px 18px;margin-bottom:18px;position:relative;">
+                <div style="position:absolute;left:-7px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--c-border);border:2px solid var(--c-surface);"></div>
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+                  <h4 style="margin:0;color:var(--c-primary);">v1.1.0</h4>
+                  <span class="text-sm text-muted">8 Mei 2026</span>
+                </div>
+                <p style="margin:0 0 8px;font-weight:600;">Sinkronisasi otomatis stok</p>
+                <ul style="margin:6px 0 0 16px;font-size:13px;color:var(--c-text-muted);line-height:1.7;">
+                  <li>Status → Selesai: stok otomatis berkurang di lokasi sesuai pemohon</li>
+                  <li>Status Selesai → status lain: rollback otomatis</li>
+                  <li>Validasi stok cukup sebelum ke Selesai (transaction abort kalau tidak cukup)</li>
+                  <li>Concurrency-safe dengan FOR UPDATE row lock</li>
+                </ul>
+              </div>
+
+              <div class="changelog-entry" style="border-left:3px solid var(--c-border);padding:0 16px;position:relative;">
+                <div style="position:absolute;left:-7px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--c-border);border:2px solid var(--c-surface);"></div>
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
+                  <h4 style="margin:0;color:var(--c-primary);">v1.0.0</h4>
+                  <span class="text-sm text-muted">7 Mei 2026</span>
+                </div>
+                <p style="margin:0 0 8px;font-weight:600;">Initial release — Platform Meterai</p>
+                <ul style="margin:6px 0 0 16px;font-size:13px;color:var(--c-text-muted);line-height:1.7;">
+                  <li>Landing page publik: form pengajuan + tracking + statistik</li>
+                  <li>Auto-generate kode MET-DDMMYYYY### (atomic, race-safe)</li>
+                  <li>Admin panel: Dashboard, Permintaan, Stok</li>
+                  <li>3 lokasi: Wisma Nusantara, Transport Hub, Depo Lebak Bulus</li>
+                  <li>5 status flow: Belum Dikonfirmasi → Sedang Disiapkan → Tersedia → Selesai/Ditolak</li>
+                  <li>PWA installable, responsive, design system MRT Jakarta</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1444,7 +1979,7 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
         <input type="number" class="input" id="master-urutan" min="0" max="9999" value="0" />
       </div>
       <div class="field">
-        <label class="checkbox">
+        <label class="check">
           <input type="checkbox" id="master-aktif" checked />
           <span>Aktif (tampil di form publik)</span>
         </label>
@@ -1453,6 +1988,45 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="ui.closeModal('modal-master')">Batal</button>
       <button class="btn btn-primary" onclick="admin.saveMaster()" id="btn-save-master">
+        <span class="material-symbols-rounded icon-sm">save</span>
+        <span>Simpan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LOKASI KERJA MODAL -->
+<div class="modal-backdrop" id="modal-location" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h3 id="loc-modal-title">Tambah Lokasi Kerja</h3>
+      <button class="modal-close" onclick="ui.closeModal('modal-location')" aria-label="Close">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field" style="margin-bottom:14px;">
+        <label>Nama Lokasi <span class="req">*</span></label>
+        <input type="text" class="input" id="loc-nama" maxlength="150" />
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Keterangan</label>
+        <input type="text" class="input" id="loc-keterangan" maxlength="200" placeholder="Opsional. Contoh: Kantor pusat" />
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Urutan Tampil</label>
+        <input type="number" class="input" id="loc-urutan" min="0" value="0" />
+      </div>
+      <div class="field">
+        <label class="check">
+          <input type="checkbox" id="loc-aktif" checked />
+          <span>Aktif (tampil di form publik)</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="ui.closeModal('modal-location')">Batal</button>
+      <button class="btn btn-primary" onclick="admin.saveLocation()" id="btn-save-location">
         <span class="material-symbols-rounded icon-sm">save</span>
         <span>Simpan</span>
       </button>
@@ -1476,6 +2050,138 @@ table.data .kode-cell{font-family:'JetBrains Mono',ui-monospace,monospace;font-w
       <button class="btn btn-danger btn-block" id="btn-confirm-yes" onclick="admin.runConfirm()">
         <span class="material-symbols-rounded icon-sm">delete</span>
         <span>Ya, Hapus</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ATK STATUS UPDATE MODAL -->
+<div class="modal-backdrop" id="modal-atk-status" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h3>Update Status Permintaan ATK</h3>
+      <button class="modal-close" onclick="ui.closeModal('modal-atk-status')" aria-label="Close">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field" style="margin-bottom:14px;">
+        <label>Kode Permintaan</label>
+        <input type="text" class="input readonly" id="atk-status-kode" readonly />
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Pemohon</label>
+        <input type="text" class="input readonly" id="atk-status-pemohon" readonly />
+      </div>
+      <div id="atk-status-items" style="margin-bottom:14px;padding:10px 12px;background:var(--c-bg);border-radius:8px;font-size:13px;"></div>
+      <div id="atk-status-stock-info" style="display:none; padding:12px 14px; border-radius:10px; margin-bottom:14px; font-size:13px; line-height:1.5;"></div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Status <span class="req">*</span></label>
+        <select id="atk-status-value" class="select" required onchange="admin.onAtkStatusChange()">
+          <option>Belum Dikonfirmasi</option>
+          <option>Sedang Disiapkan</option>
+          <option>Tersedia</option>
+          <option>Ditolak</option>
+          <option>Selesai</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Keterangan <span class="req">*</span></label>
+        <textarea class="input" id="atk-status-keterangan" rows="3" placeholder="Wajib diisi"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="ui.closeModal('modal-atk-status')">Batal</button>
+      <button class="btn btn-primary" onclick="admin.saveAtkStatus()" id="btn-save-atk-status">
+        <span class="material-symbols-rounded icon-sm">save</span>
+        <span>Simpan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ATK ITEM CRUD MODAL -->
+<div class="modal-backdrop" id="modal-atk-item" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <h3 id="atk-item-modal-title">Tambah Item ATK</h3>
+      <button class="modal-close" onclick="ui.closeModal('modal-atk-item')" aria-label="Close">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="field"><label>Nama Barang <span class="req">*</span></label>
+          <input type="text" class="input" id="atk-i-nama" maxlength="150" />
+        </div>
+        <div class="field"><label>Brand</label>
+          <input type="text" class="input" id="atk-i-brand" maxlength="100" placeholder="opsional" />
+        </div>
+        <div class="field"><label>Kategori</label>
+          <select class="select" id="atk-i-cat"><option value="">— Pilih —</option></select>
+        </div>
+        <div class="field"><label>Lokasi <span class="req">*</span></label>
+          <select class="select" id="atk-i-loc"><option value="">— Pilih —</option></select>
+        </div>
+        <div class="field"><label>Satuan</label>
+          <select class="select" id="atk-i-satuan">
+            <option>Pcs</option><option>Box</option><option>Pack</option><option>Unit</option>
+            <option>Rim</option><option>Lembar</option><option>Buah</option><option>Botol</option>
+          </select>
+        </div>
+        <div class="field"><label>Stok Awal</label>
+          <input type="number" class="input" id="atk-i-stok" min="0" value="0" />
+          <small class="text-muted" id="atk-i-stok-note">Hanya bisa diisi saat tambah baru</small>
+        </div>
+        <div class="field"><label>Minimum (peringatan stok)</label>
+          <input type="number" class="input" id="atk-i-min" min="0" value="0" />
+        </div>
+        <div class="field" style="display:flex;align-items:end;">
+          <label class="check" style="margin-bottom:8px;">
+            <input type="checkbox" id="atk-i-aktif" checked />
+            <span>Aktif</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="ui.closeModal('modal-atk-item')">Batal</button>
+      <button class="btn btn-primary" onclick="admin.saveAtkItem()" id="btn-save-atk-item">
+        <span class="material-symbols-rounded icon-sm">save</span><span>Simpan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ATK CATEGORY MODAL -->
+<div class="modal-backdrop" id="modal-atk-cat" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3 id="atk-cat-modal-title">Tambah Kategori ATK</h3>
+      <button class="modal-close" onclick="ui.closeModal('modal-atk-cat')" aria-label="Close">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field" style="margin-bottom:14px;">
+        <label>Nama Kategori <span class="req">*</span></label>
+        <input type="text" class="input" id="atk-c-nama" maxlength="100" />
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Urutan</label>
+        <input type="number" class="input" id="atk-c-urutan" min="0" value="0" />
+      </div>
+      <div class="field">
+        <label class="check">
+          <input type="checkbox" id="atk-c-aktif" checked />
+          <span>Aktif</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="ui.closeModal('modal-atk-cat')">Batal</button>
+      <button class="btn btn-primary" onclick="admin.saveAtkCat()" id="btn-save-atk-cat">
+        <span class="material-symbols-rounded icon-sm">save</span><span>Simpan</span>
       </button>
     </div>
   </div>
@@ -1711,47 +2417,77 @@ $('#form-tracking').addEventListener('submit', async e=>{
   if (notSupabase()) return;
   const kode = $('#t-kode').value.trim().toUpperCase();
   $('#t-kode').value = kode;
-  if (!/^MET-\d{8}\d{3}$/.test(kode)){
-    toast('Format kode tidak valid (MET-DDMMYYYY###)','warning'); return;
+
+  const isMeterai = /^MET-\d{8}\d{3}$/.test(kode);
+  const isAtk     = /^ATK-\d{8}\d{3}$/.test(kode);
+  if (!isMeterai && !isAtk){
+    toast('Format kode tidak valid (MET-DDMMYYYY### atau ATK-DDMMYYYY###)','warning'); return;
   }
   const result = $('#t-result');
   result.innerHTML = '<div class="empty"><div class="loader" style="width:32px;height:32px;margin:0 auto;"></div><p>Mencari…</p></div>';
 
   try{
-    const { data, error } = await sb.from('requests')
-      .select('*').eq('kode_permintaan', kode).maybeSingle();
-    if (error) throw error;
-    if (!data){
+    if (isMeterai){
+      const { data, error } = await sb.from('requests').select('*').eq('kode_permintaan', kode).maybeSingle();
+      if (error) throw error;
+      if (!data){ renderTrackNotFound(result); return; }
       result.innerHTML = `
-        <div class="empty fade-in">
-          <span class="material-symbols-rounded">search_off</span>
-          <p style="font-weight:600;color:var(--c-text);">Kode tidak ditemukan</p>
-          <p>Pastikan Anda memasukkan kode yang benar.</p>
+        <div class="tracking-card fade-in">
+          <div class="tracking-card-head">
+            <span class="tracking-code">${escapeHtml(data.kode_permintaan)}</span>
+            ${chip(data.status)}
+          </div>
+          <div class="tracking-detail">
+            <div class="item"><div class="lbl">Pemohon</div><div class="val">${escapeHtml(data.nama_pemohon)}</div></div>
+            <div class="item"><div class="lbl">Unit Kerja</div><div class="val">${escapeHtml(data.departemen)} · ${escapeHtml(data.divisi)}</div></div>
+            <div class="item"><div class="lbl">Lokasi</div><div class="val">${escapeHtml(data.lokasi_kerja)}</div></div>
+            <div class="item"><div class="lbl">Jumlah Meterai</div><div class="val">${fmtNumber(data.jumlah_meterai)} lembar</div></div>
+            <div class="item" style="grid-column:1/-1;"><div class="lbl">Tujuan</div><div class="val">${escapeHtml(data.tujuan_penggunaan)}</div></div>
+            <div class="item" style="grid-column:1/-1;"><div class="lbl">Keterangan</div><div class="val">${data.keterangan ? escapeHtml(data.keterangan) : '<span class="text-muted">— belum ada keterangan —</span>'}</div></div>
+            <div class="item"><div class="lbl">Diajukan</div><div class="val">${fmtDate(data.created_at)}</div></div>
+            <div class="item"><div class="lbl">Diperbarui</div><div class="val">${fmtDate(data.updated_at)}</div></div>
+          </div>
         </div>`;
-      return;
+    } else {
+      const { data, error } = await sb.from('atk_requests').select('*').eq('kode_permintaan', kode).maybeSingle();
+      if (error) throw error;
+      if (!data){ renderTrackNotFound(result); return; }
+      const itemsHtml = (data.items||[]).map(it =>
+        `<li>${escapeHtml(it.nama)}${it.brand?' · '+escapeHtml(it.brand):''} — <b>${fmtNumber(it.jumlah)}</b> ${escapeHtml(it.satuan||'')}</li>`
+      ).join('');
+      result.innerHTML = `
+        <div class="tracking-card fade-in">
+          <div class="tracking-card-head">
+            <span class="tracking-code">${escapeHtml(data.kode_permintaan)}</span>
+            ${chip(data.status)}
+          </div>
+          <div class="tracking-detail">
+            <div class="item"><div class="lbl">Pemohon</div><div class="val">${escapeHtml(data.nama_pemohon)}</div></div>
+            <div class="item"><div class="lbl">Unit Kerja</div><div class="val">${escapeHtml(data.departemen)} · ${escapeHtml(data.divisi)}</div></div>
+            <div class="item"><div class="lbl">Lokasi</div><div class="val">${escapeHtml(data.lokasi_kerja)}</div></div>
+            <div class="item"><div class="lbl">Total Barang</div><div class="val">${fmtNumber(data.total_jumlah)}</div></div>
+            <div class="item" style="grid-column:1/-1;"><div class="lbl">Daftar Barang</div><div class="val"><ul style="margin:0 0 0 18px;padding:0;">${itemsHtml}</ul></div></div>
+            <div class="item" style="grid-column:1/-1;"><div class="lbl">Tujuan</div><div class="val">${escapeHtml(data.tujuan)}</div></div>
+            <div class="item" style="grid-column:1/-1;"><div class="lbl">Keterangan</div><div class="val">${data.keterangan ? escapeHtml(data.keterangan) : '<span class="text-muted">— belum ada keterangan —</span>'}</div></div>
+            <div class="item"><div class="lbl">Diajukan</div><div class="val">${fmtDate(data.created_at)}</div></div>
+            <div class="item"><div class="lbl">Diperbarui</div><div class="val">${fmtDate(data.updated_at)}</div></div>
+          </div>
+        </div>`;
     }
-    result.innerHTML = `
-      <div class="tracking-card fade-in">
-        <div class="tracking-card-head">
-          <span class="tracking-code">${escapeHtml(data.kode_permintaan)}</span>
-          ${chip(data.status)}
-        </div>
-        <div class="tracking-detail">
-          <div class="item"><div class="lbl">Pemohon</div><div class="val">${escapeHtml(data.nama_pemohon)}</div></div>
-          <div class="item"><div class="lbl">Unit Kerja</div><div class="val">${escapeHtml(data.departemen)} · ${escapeHtml(data.divisi)}</div></div>
-          <div class="item"><div class="lbl">Lokasi</div><div class="val">${escapeHtml(data.lokasi_kerja)}</div></div>
-          <div class="item"><div class="lbl">Jumlah Meterai</div><div class="val">${fmtNumber(data.jumlah_meterai)} lembar</div></div>
-          <div class="item" style="grid-column:1/-1;"><div class="lbl">Tujuan</div><div class="val">${escapeHtml(data.tujuan_penggunaan)}</div></div>
-          <div class="item" style="grid-column:1/-1;"><div class="lbl">Keterangan</div><div class="val">${data.keterangan ? escapeHtml(data.keterangan) : '<span class="text-muted">— belum ada keterangan —</span>'}</div></div>
-          <div class="item"><div class="lbl">Diajukan</div><div class="val">${fmtDate(data.created_at)}</div></div>
-          <div class="item"><div class="lbl">Diperbarui</div><div class="val">${fmtDate(data.updated_at)}</div></div>
-        </div>
-      </div>`;
   }catch(err){
     console.error(err);
     result.innerHTML = `<div class="empty"><span class="material-symbols-rounded">error</span><p>Terjadi kesalahan: ${escapeHtml(err.message||'')}</p></div>`;
   }
 });
+
+function renderTrackNotFound(result){
+  result.innerHTML = `
+    <div class="empty fade-in">
+      <span class="material-symbols-rounded">search_off</span>
+      <p style="font-weight:600;color:var(--c-text);">Kode tidak ditemukan</p>
+      <p>Pastikan Anda memasukkan kode yang benar.</p>
+    </div>`;
+}
 
 /* ============================================================
    LANDING STATS
@@ -1919,7 +2655,7 @@ $('#form-login').addEventListener('submit', async e=>{
    ============================================================ */
 const admin = {
   state:{
-    currentView:'dashboard',
+    currentView:'dashboard-meterai',
     pendingPage:1, pendingPerPage:5,
     reqPage:1, reqPerPage:10,
     reqFilter:'', reqSearch:'',
@@ -1931,8 +2667,16 @@ const admin = {
     activityPage:1, activityPerPage:15,
     activityFilter:'', activitySearch:'',
     masterDivFilter:'',
-    masterEditing:null,    // {kind:'department'|'division', id, ...}
-    pendingConfirm:null    // {fn, label}
+    masterEditing:null,
+    pendingConfirm:null,
+    // ATK state
+    atkReqPage:1, atkReqPerPage:10, atkReqFilter:'', atkReqSearch:'',
+    atkPendingPage:1, atkPendingPerPage:5,
+    atkStockPage:1, atkStockPerPage:15, atkStockSearch:'', atkStockFilterLoc:'', atkStockFilterCat:'',
+    atkMovPage:1, atkMovPerPage:10,
+    editingAtkRequest:null,
+    editingAtkItem:null, editingAtkCat:null,
+    atkItemFilterLoc:''
   },
 
   async init(){
@@ -1941,7 +2685,9 @@ const admin = {
     }
     $('#admin-user-email').textContent = auth.user.email || '—';
     this.bind();
-    this.showView('dashboard');
+    // Open meterai group by default
+    $('#grp-meterai')?.classList.add('open');
+    this.showView('dashboard-meterai');
   },
 
   bind(){
@@ -1970,25 +2716,82 @@ const admin = {
       this.state.masterDivFilter = $('#div-filter-dept').value;
       this.renderDivisionsTable();
     });
+    // ATK filter listeners
+    $('#atk-req-search')?.addEventListener('input', debounce(()=>{
+      this.state.atkReqSearch = $('#atk-req-search').value.trim();
+      this.state.atkReqPage = 1;
+      this.loadAtkRequests();
+    },300));
+    $('#atk-req-filter-status')?.addEventListener('change', ()=>{
+      this.state.atkReqFilter = $('#atk-req-filter-status').value;
+      this.state.atkReqPage = 1;
+      this.loadAtkRequests();
+    });
+    $('#atk-stock-search')?.addEventListener('input', debounce(()=>{
+      this.state.atkStockSearch = $('#atk-stock-search').value.trim();
+      this.state.atkStockPage = 1;
+      this.loadAtkStock();
+    },300));
+    $('#atk-stock-filter-loc')?.addEventListener('change', ()=>{
+      this.state.atkStockFilterLoc = $('#atk-stock-filter-loc').value;
+      this.state.atkStockPage = 1;
+      this.loadAtkStock();
+    });
+    $('#atk-stock-filter-cat')?.addEventListener('change', ()=>{
+      this.state.atkStockFilterCat = $('#atk-stock-filter-cat').value;
+      this.state.atkStockPage = 1;
+      this.loadAtkStock();
+    });
+    $('#atk-item-filter-loc')?.addEventListener('change', ()=>{
+      this.state.atkItemFilterLoc = $('#atk-item-filter-loc').value;
+      this.loadAtkMaster();
+    });
   },
 
   showView(view){
     this.state.currentView = view;
     $$('.admin-view').forEach(v=>v.hidden = (v.id !== `view-${view}`));
     $$('.nav-item[data-view]').forEach(i=>i.classList.toggle('active', i.dataset.view===view));
-    const titles = { dashboard:'Dashboard', permintaan:'Data Permintaan Meterai', stock:'Stok Meterai', activity:'Log Aktivitas', master:'Master Data — Departemen & Divisi' };
+    const titles = {
+      'dashboard-meterai':'Statistik Meterai',
+      'dashboard-atk'    :'Statistik ATK',
+      'permintaan'       :'Data Permintaan Meterai',
+      'stock'            :'Stok Meterai',
+      'atk-permintaan'   :'Data Permintaan ATK',
+      'atk-stock'        :'Stok ATK',
+      'atk-stock-in'     :'Barang Masuk ATK',
+      'atk-master'       :'Master ATK — Kategori & Item',
+      'master'           :'Master Data — Departemen, Divisi & Lokasi',
+      'activity'         :'Log Aktivitas',
+      'changelog'        :'Riwayat Versi'
+    };
     $('#admin-page-title').textContent = titles[view] || 'Admin';
+    // Auto-open relevant nav group
+    if (view === 'permintaan' || view === 'stock'){
+      $('#grp-meterai')?.classList.add('open');
+    }
+    if (view === 'atk-permintaan' || view === 'atk-stock' || view === 'atk-stock-in' || view === 'atk-master'){
+      $('#grp-atk')?.classList.add('open');
+    }
     if (window.innerWidth <= 900) ui.toggleSidebar(false);
     this.refresh();
   },
 
+  toggleGroup(id){ $('#'+id)?.classList.toggle('open'); },
+
   refresh(){
     const v = this.state.currentView;
-    if (v==='dashboard')  this.loadDashboard();
-    if (v==='permintaan') this.loadRequests();
-    if (v==='stock')      this.loadStockSection();
-    if (v==='activity')   this.loadActivityLog();
-    if (v==='master')     this.loadMaster();
+    if (v==='dashboard-meterai') this.loadDashboard();
+    if (v==='dashboard-atk')     this.loadAtkDashboard();
+    if (v==='permintaan')        this.loadRequests();
+    if (v==='stock')             this.loadStockSection();
+    if (v==='atk-permintaan')    this.loadAtkRequests();
+    if (v==='atk-stock')         this.loadAtkStock();
+    if (v==='atk-stock-in')      this.loadAtkStockInPage();
+    if (v==='atk-master')        this.loadAtkMaster();
+    if (v==='activity')          this.loadActivityLog();
+    if (v==='master')            this.loadMaster();
+    // changelog: static, no load needed
   },
 
   async loadDashboard(){
@@ -2406,9 +3209,77 @@ const admin = {
         masterData.departments.map(d=>`<option value="${d.id}" ${String(d.id)===cur?'selected':''}>${escapeHtml(d.nama)}</option>`).join('');
       this.renderDeptsTable();
       this.renderDivisionsTable();
+      this.renderLocationsTable();
       // Refresh form publik kalau ada user yang lagi buka tab landing
       masterData.fillFormSelects();
     }catch(err){ console.error(err); toast('Gagal memuat master data','error'); }
+  },
+
+  renderLocationsTable(){
+    const tbody = $('#loc-table tbody'); if (!tbody) return;
+    const list = masterData.locations;
+    tbody.innerHTML = list.length
+      ? list.map((l,i) => `
+          <tr>
+            <td class="text-muted">${i+1}</td>
+            <td><div style="font-weight:600;">${escapeHtml(l.nama)}</div></td>
+            <td class="text-sm text-muted">${escapeHtml(l.keterangan || '—')}</td>
+            <td>${l.aktif ? '<span class="chip selesai">Aktif</span>' : '<span class="chip belum">Nonaktif</span>'}</td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-icon-sm" onclick='admin.openLocationModal(${JSON.stringify(l).replace(/'/g,"&#39;")})' aria-label="Edit">
+                  <span class="material-symbols-rounded icon-sm">edit</span>
+                </button>
+                <button class="btn-icon-sm danger" onclick='admin.confirmDeleteLocation(${l.id})' aria-label="Hapus">
+                  <span class="material-symbols-rounded icon-sm">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>`).join('')
+      : `<tr><td colspan="5"><div class="empty"><span class="material-symbols-rounded">location_off</span><p>Belum ada lokasi</p></div></td></tr>`;
+  },
+
+  openLocationModal(l){
+    this.state.editingLocation = l;
+    $('#loc-modal-title').textContent = l ? 'Edit Lokasi Kerja' : 'Tambah Lokasi Kerja';
+    $('#loc-nama').value = l?.nama || '';
+    $('#loc-keterangan').value = l?.keterangan || '';
+    $('#loc-urutan').value = l?.urutan ?? 0;
+    $('#loc-aktif').checked = l ? !!l.aktif : true;
+    ui.openModal('modal-location');
+  },
+
+  async saveLocation(){
+    const l = this.state.editingLocation;
+    const nama = $('#loc-nama').value.trim();
+    const ket  = $('#loc-keterangan').value.trim();
+    const urut = parseInt($('#loc-urutan').value,10) || 0;
+    const aktif = $('#loc-aktif').checked;
+    if (!nama){ toast('Nama lokasi wajib','warning'); return; }
+    const btn = $('#btn-save-location'); const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Menyimpan…</span>';
+    try{
+      const { error } = await sb.rpc('upsert_location',{ p_id: l?.id ?? null, p_nama: nama, p_keterangan: ket, p_urutan: urut, p_aktif: aktif });
+      if (error) throw error;
+      toast('Lokasi disimpan','success');
+      ui.closeModal('modal-location');
+      await this.loadMaster();
+    }catch(err){ console.error(err); toast('Gagal: '+(err.message||''),'error',5000);
+    }finally{ btn.disabled=false; btn.innerHTML = orig; }
+  },
+
+  confirmDeleteLocation(id){
+    const l = masterData.locations.find(x=>x.id == id); if (!l) return;
+    $('#confirm-title').textContent = 'Hapus Lokasi Kerja?';
+    $('#confirm-message').innerHTML = `Lokasi <b>${escapeHtml(l.nama)}</b> akan dihapus permanen.`;
+    $('#confirm-warning').textContent = 'Peringatan: semua item ATK di lokasi ini juga akan terhapus (riwayat permintaan tetap tersimpan dengan nama lokasi).';
+    $('#confirm-warning').style.display = 'block';
+    this.state.pendingConfirm = async ()=>{
+      const { error } = await sb.rpc('delete_location',{ p_id: id });
+      if (error) throw error;
+      toast('Lokasi dihapus','success'); await this.loadMaster();
+    };
+    ui.openModal('modal-confirm');
   },
 
   renderDeptsTable(){
@@ -2595,6 +3466,466 @@ const admin = {
     btns += `<button class="page-btn" ${page>=totalPages?'disabled':''} onclick="(${onClick.toString()})(${page+1})"><span class="material-symbols-rounded icon-sm">chevron_right</span></button>`;
 
     el.innerHTML = `<div class="pagination-info">Menampilkan ${from}–${to} dari ${fmtNumber(total)}</div><div class="page-btns">${btns}</div>`;
+  },
+
+  /* ============================================================
+     ATK MODULE — Admin methods
+     ============================================================ */
+  atkChart: null,
+
+  async loadAtkDashboard(){
+    if (!sb) return;
+    try{
+      const { data: sum } = await sb.from('v_atk_dashboard').select('*').maybeSingle();
+      if (sum){
+        $('#atk-dash-keluar').textContent  = fmtNumber(sum.total_atk_keluar);
+        $('#atk-dash-bulan').textContent   = fmtNumber(sum.permintaan_bulan_ini);
+        $('#atk-dash-pending').textContent = fmtNumber(sum.total_pending);
+        $('#atk-dash-items').textContent   = fmtNumber(sum.total_items);
+        $('#atk-dash-menipis').textContent = fmtNumber(sum.items_menipis);
+        const now = new Date();
+        $('#atk-dash-bulan-label').textContent = `${MONTH_NAMES_ID[now.getMonth()]} ${now.getFullYear()}`;
+      }
+      // Bulan selector
+      const sel = $('#atk-chart-bulan');
+      if (sel && sel.options.length === 0){
+        const months = []; const today = new Date();
+        for (let i=0;i<6;i++){
+          const d = new Date(today.getFullYear(), today.getMonth()-i, 1);
+          const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+          months.push({k,label: `${MONTH_NAMES_ID[d.getMonth()]} ${d.getFullYear()}`});
+        }
+        sel.innerHTML = months.map(m=>`<option value="${m.k}">${m.label}</option>`).join('');
+      }
+      const bulan = sel?.value || currentBulan();
+      const { data: rows } = await sb.from('v_atk_monthly_stats').select('*').eq('bulan', bulan);
+      const sorted = (rows||[]).sort((a,b)=>b.total_barang - a.total_barang).slice(0,10);
+      const ctx = $('#atk-chart')?.getContext('2d'); if (!ctx) return;
+      if (this.atkChart) this.atkChart.destroy();
+      if (sorted.length === 0){
+        this.atkChart = new Chart(ctx, { type:'bar',
+          data:{labels:['Tidak ada data'],datasets:[{data:[0],backgroundColor:'#E2E8F0'}]},
+          options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+      } else {
+        const grad = ctx.createLinearGradient(0,0,0,300);
+        grad.addColorStop(0,'#0F4C81'); grad.addColorStop(1,'#00A651');
+        this.atkChart = new Chart(ctx, {
+          type:'bar',
+          data:{ labels: sorted.map(r=>r.departemen), datasets:[{ label:'Total Barang', data: sorted.map(r=>r.total_barang), backgroundColor: grad, borderRadius:6 }]},
+          options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}} }
+        });
+      }
+      // Pending table (top 5)
+      const { data: pend } = await sb.from('atk_requests').select('*')
+        .in('status',['Belum Dikonfirmasi','Sedang Disiapkan','Tersedia'])
+        .order('created_at',{ascending:false}).limit(5);
+      const tbody = $('#atk-pending-table tbody');
+      if (!pend || pend.length === 0){
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding:24px;">Tidak ada permintaan pending</td></tr>`;
+      } else {
+        tbody.innerHTML = pend.map(r=>{
+          const itemCount = (r.items||[]).length;
+          return `<tr>
+            <td><span class="kode-cell">${escapeHtml(r.kode_permintaan)}</span></td>
+            <td>${escapeHtml(r.nama_pemohon)}</td>
+            <td class="text-sm">${escapeHtml(r.lokasi_kerja)}</td>
+            <td>${itemCount} item · ${fmtNumber(r.total_jumlah)}</td>
+            <td>${chip(r.status)}</td>
+            <td class="text-sm">${fmtDateShort(r.created_at)}</td>
+            <td><button class="btn-icon-sm" onclick='admin.openAtkStatusModal(${JSON.stringify(r).replace(/'/g, "&#39;")})' aria-label="Edit"><span class="material-symbols-rounded icon-sm">edit</span></button></td>
+          </tr>`;
+        }).join('');
+      }
+    }catch(err){ console.error('loadAtkDashboard:',err); toast('Gagal memuat statistik ATK','error'); }
+  },
+
+  async loadAtkRequests(){
+    if (!sb) return;
+    const s = this.state;
+    try{
+      let q = sb.from('atk_requests').select('*',{count:'exact'}).order('created_at',{ascending:false});
+      if (s.atkReqFilter) q = q.eq('status', s.atkReqFilter);
+      if (s.atkReqSearch){
+        const v = `%${s.atkReqSearch}%`;
+        q = q.or(`kode_permintaan.ilike.${v},nama_pemohon.ilike.${v},departemen.ilike.${v},divisi.ilike.${v},lokasi_kerja.ilike.${v}`);
+      }
+      const from = (s.atkReqPage-1)*s.atkReqPerPage;
+      q = q.range(from, from + s.atkReqPerPage - 1);
+      const { data, error, count } = await q;
+      if (error) throw error;
+      const tbody = $('#atk-req-table tbody');
+      if (!data || data.length === 0){
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding:24px;">Tidak ada permintaan ATK</td></tr>`;
+      } else {
+        tbody.innerHTML = data.map(r=>{
+          const itemCount = (r.items||[]).length;
+          return `<tr>
+            <td><span class="kode-cell">${escapeHtml(r.kode_permintaan)}</span></td>
+            <td>${escapeHtml(r.nama_pemohon)}</td>
+            <td class="text-sm">${escapeHtml(r.departemen)}</td>
+            <td class="text-sm">${escapeHtml(r.lokasi_kerja)}</td>
+            <td>${itemCount} item · ${fmtNumber(r.total_jumlah)}</td>
+            <td>${chip(r.status)}</td>
+            <td class="text-sm">${fmtDateShort(r.created_at)}</td>
+            <td><button class="btn-icon-sm" onclick='admin.openAtkStatusModal(${JSON.stringify(r).replace(/'/g, "&#39;")})' aria-label="Edit"><span class="material-symbols-rounded icon-sm">edit</span></button></td>
+          </tr>`;
+        }).join('');
+      }
+      this.renderPagination('atk-req-pagination', s.atkReqPage, s.atkReqPerPage, count||0,
+        (p)=>{ admin.state.atkReqPage = p; admin.loadAtkRequests(); });
+    }catch(err){ console.error('loadAtkRequests:',err); toast('Gagal memuat data','error'); }
+  },
+
+  openAtkStatusModal(r){
+    this.state.editingAtkRequest = r;
+    $('#atk-status-kode').value = r.kode_permintaan;
+    $('#atk-status-pemohon').value = r.nama_pemohon + ' · ' + r.lokasi_kerja;
+    const items = (r.items||[]);
+    $('#atk-status-items').innerHTML = `<b>Daftar Barang (${items.length}):</b><ul style="margin:6px 0 0 18px;padding:0;">` +
+      items.map(it => `<li>${escapeHtml(it.nama)}${it.brand?' · '+escapeHtml(it.brand):''} — <b>${fmtNumber(it.jumlah)}</b> ${escapeHtml(it.satuan||'')}</li>`).join('') + '</ul>';
+    $('#atk-status-value').value = r.status;
+    $('#atk-status-keterangan').value = r.keterangan || '';
+    this.onAtkStatusChange();
+    ui.openModal('modal-atk-status');
+  },
+
+  async onAtkStatusChange(){
+    const r = this.state.editingAtkRequest; if (!r) return;
+    const newStatus = $('#atk-status-value').value;
+    const info = $('#atk-status-stock-info');
+    info.style.display = 'none'; info.innerHTML = '';
+
+    if (newStatus === 'Selesai' && !r.stock_deducted){
+      // Cek stok semua item
+      try{
+        const itemIds = (r.items||[]).map(i=>i.item_id).filter(Boolean);
+        if (itemIds.length === 0){ info.style.display='none'; return; }
+        const { data: items } = await sb.from('atk_items').select('id,nama,stok').in('id', itemIds);
+        const stokMap = {}; (items||[]).forEach(i => stokMap[i.id] = i);
+        const insuf = (r.items||[]).filter(it => {
+          const st = stokMap[it.item_id]; return st && st.stok < it.jumlah;
+        });
+        if (insuf.length > 0){
+          info.style.display='block';
+          info.style.background = '#FEF2F2'; info.style.border = '1px solid #FCA5A5'; info.style.color = '#991B1B';
+          info.innerHTML = '<b>⚠️ Stok tidak cukup:</b><ul style="margin:6px 0 0 18px;">' +
+            insuf.map(it => `<li>${escapeHtml(it.nama)}: butuh <b>${it.jumlah}</b>, tersedia <b>${stokMap[it.item_id].stok}</b></li>`).join('') + '</ul>';
+        } else {
+          info.style.display='block';
+          info.style.background = '#ECFDF5'; info.style.border = '1px solid #6EE7B7'; info.style.color = '#065F46';
+          info.innerHTML = '✅ <b>Stok cukup.</b> Saat disimpan, stok di lokasi <b>'+escapeHtml(r.lokasi_kerja)+'</b> akan otomatis dikurangi.';
+        }
+      }catch(err){ console.warn(err); }
+    } else if (r.status === 'Selesai' && newStatus !== 'Selesai' && r.stock_deducted){
+      info.style.display='block';
+      info.style.background = '#FEF3C7'; info.style.border = '1px solid #FCD34D'; info.style.color = '#78350F';
+      info.innerHTML = '⚠️ <b>Rollback stok.</b> Saat disimpan, stok yang sebelumnya dikurangi akan dikembalikan.';
+    } else if (r.status !== 'Selesai' && newStatus === 'Selesai' && r.stock_deducted){
+      info.style.display='block';
+      info.style.background = '#EFF6FF'; info.style.border = '1px solid #93C5FD'; info.style.color = '#1E3A8A';
+      info.innerHTML = 'ℹ️ Stok sudah pernah dikurangi sebelumnya, tidak akan dikurangi ulang.';
+    }
+  },
+
+  async saveAtkStatus(){
+    const r = this.state.editingAtkRequest; if (!r) return;
+    const status = $('#atk-status-value').value;
+    const ket    = $('#atk-status-keterangan').value.trim();
+    if (!ket){ toast('Keterangan wajib diisi','warning'); return; }
+    const btn = $('#btn-save-atk-status'); const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Menyimpan…</span>';
+    try{
+      const { error } = await sb.rpc('update_atk_request_status',{ p_kode: r.kode_permintaan, p_status: status, p_keterangan: ket });
+      if (error) throw error;
+      toast('Status diperbarui','success');
+      ui.closeModal('modal-atk-status');
+      const v = this.state.currentView;
+      if (v === 'atk-permintaan') this.loadAtkRequests();
+      else if (v === 'dashboard-atk') this.loadAtkDashboard();
+    }catch(err){
+      console.error(err); toast('Gagal: ' + (err.message||'unknown'),'error',5000);
+    }finally{ btn.disabled=false; btn.innerHTML = orig; }
+  },
+
+  async loadAtkStock(){
+    if (!sb) return;
+    const s = this.state;
+    try{
+      // Populate filters
+      const locSel = $('#atk-stock-filter-loc');
+      if (locSel && locSel.options.length <= 1){
+        locSel.innerHTML = '<option value="">Semua Lokasi</option>' +
+          masterData.activeLocations().map(l=>`<option value="${l.id}">${escapeHtml(l.nama)}</option>`).join('');
+      }
+      const catSel = $('#atk-stock-filter-cat');
+      if (catSel && catSel.options.length <= 1){
+        catSel.innerHTML = '<option value="">Semua Kategori</option>' +
+          masterDataAtk.categories.filter(c=>c.aktif).map(c=>`<option value="${c.id}">${escapeHtml(c.nama)}</option>`).join('');
+      }
+      let q = sb.from('atk_items').select('*,locations(nama),atk_categories(nama)',{count:'exact'}).order('nama',{ascending:true});
+      if (s.atkStockFilterLoc) q = q.eq('location_id', s.atkStockFilterLoc);
+      if (s.atkStockFilterCat) q = q.eq('category_id', s.atkStockFilterCat);
+      if (s.atkStockSearch){
+        const v = `%${s.atkStockSearch}%`;
+        q = q.or(`nama.ilike.${v},brand.ilike.${v}`);
+      }
+      const from = (s.atkStockPage-1)*s.atkStockPerPage;
+      q = q.range(from, from + s.atkStockPerPage - 1);
+      const { data, error, count } = await q;
+      if (error) throw error;
+      const tbody = $('#atk-stock-table tbody');
+      if (!data || data.length === 0){
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted" style="padding:24px;">Tidak ada item</td></tr>`;
+      } else {
+        tbody.innerHTML = data.map(r=>{
+          const status = r.stok <= 0 ? 'empty-' : (r.stok <= r.minimum ? 'low' : 'ok');
+          const stext  = status==='ok' ? 'Aman' : (status==='low' ? 'Menipis' : 'Habis');
+          const cls    = status==='ok' ? 'tersedia' : (status==='low' ? 'disiapkan' : 'ditolak');
+          return `<tr>
+            <td class="text-sm">${escapeHtml(r.locations?.nama || '-')}</td>
+            <td class="text-sm">${escapeHtml(r.atk_categories?.nama || '-')}</td>
+            <td><b>${escapeHtml(r.nama)}</b></td>
+            <td class="text-sm text-muted">${escapeHtml(r.brand||'—')}</td>
+            <td class="text-sm">${escapeHtml(r.satuan)}</td>
+            <td><b>${fmtNumber(r.stok)}</b></td>
+            <td class="text-sm text-muted">${fmtNumber(r.minimum)}</td>
+            <td><span class="chip ${cls}">${stext}</span></td>
+            <td><button class="btn-icon-sm" onclick='admin.openAtkItemModal(${JSON.stringify(r).replace(/'/g,"&#39;")})' aria-label="Edit"><span class="material-symbols-rounded icon-sm">edit</span></button></td>
+          </tr>`;
+        }).join('');
+      }
+      this.renderPagination('atk-stock-pagination', s.atkStockPage, s.atkStockPerPage, count||0,
+        (p)=>{ admin.state.atkStockPage = p; admin.loadAtkStock(); });
+
+      // Movements
+      let qm = sb.from('atk_movements').select('*',{count:'exact'}).order('created_at',{ascending:false});
+      const fromM = (s.atkMovPage-1)*s.atkMovPerPage;
+      qm = qm.range(fromM, fromM + s.atkMovPerPage - 1);
+      const { data: movs, count: movCount } = await qm;
+      const movBody = $('#atk-mov-table tbody');
+      if (!movs || movs.length === 0){
+        movBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding:24px;">Belum ada mutasi stok</td></tr>`;
+      } else {
+        movBody.innerHTML = movs.map(m=>{
+          const cls = m.perubahan > 0 ? 'tersedia' : (m.perubahan < 0 ? 'ditolak' : 'disiapkan');
+          const sign = m.perubahan > 0 ? '+' : '';
+          return `<tr>
+            <td class="text-sm">${fmtDate(m.created_at)}</td>
+            <td><span class="chip ${cls}">${escapeHtml(m.tipe)}</span></td>
+            <td><b>${escapeHtml(m.item_nama)}</b></td>
+            <td class="text-sm">${escapeHtml(m.location_nama)}</td>
+            <td class="text-sm">${fmtNumber(m.stok_sebelum)}</td>
+            <td><b>${sign}${fmtNumber(m.perubahan)}</b></td>
+            <td class="text-sm">${fmtNumber(m.stok_sesudah)}</td>
+            <td class="text-sm text-muted">${escapeHtml(m.keterangan||'')}${m.referensi?' · <span class="kode-cell">'+escapeHtml(m.referensi)+'</span>':''}</td>
+          </tr>`;
+        }).join('');
+      }
+      this.renderPagination('atk-mov-pagination', s.atkMovPage, s.atkMovPerPage, movCount||0,
+        (p)=>{ admin.state.atkMovPage = p; admin.loadAtkStock(); });
+    }catch(err){ console.error('loadAtkStock:',err); toast('Gagal memuat stok ATK','error'); }
+  },
+
+  async loadAtkStockInPage(){
+    if (!sb) return;
+    try{
+      // Reload items to get fresh stock
+      await masterDataAtk.loadAll();
+      const sel = $('#in-item');
+      const items = masterDataAtk.items.filter(i=>i.aktif);
+      sel.innerHTML = '<option value="">— Pilih barang —</option>' +
+        items.map(i => `<option value="${i.id}">${escapeHtml(i.locations?.nama||'?')} · ${escapeHtml(i.nama)}${i.brand?' · '+escapeHtml(i.brand):''} (Stok: ${i.stok})</option>`).join('');
+      const { data: hist } = await sb.from('atk_movements').select('*').eq('tipe','MASUK').order('created_at',{ascending:false}).limit(10);
+      const tbody = $('#atk-in-history tbody');
+      if (!hist || hist.length === 0){
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:24px;">Belum ada riwayat barang masuk</td></tr>`;
+      } else {
+        tbody.innerHTML = hist.map(h=>`<tr>
+          <td class="text-sm">${fmtDate(h.created_at)}</td>
+          <td><b>${escapeHtml(h.item_nama)}</b></td>
+          <td class="text-sm">${escapeHtml(h.location_nama)}</td>
+          <td><b>+${fmtNumber(h.perubahan)}</b></td>
+          <td class="text-sm">${escapeHtml(h.user_email||'-')}</td>
+          <td class="text-sm text-muted">${escapeHtml(h.keterangan||'')}</td>
+        </tr>`).join('');
+      }
+    }catch(err){ console.error('loadAtkStockInPage:',err); }
+  },
+
+  async submitStockIn(){
+    if (!sb) return;
+    const itemId = $('#in-item').value;
+    const jumlah = parseInt($('#in-jumlah').value,10);
+    const ket    = $('#in-keterangan').value.trim();
+    if (!itemId){ toast('Pilih barang dulu','warning'); return; }
+    if (!jumlah || jumlah <= 0){ toast('Jumlah harus > 0','warning'); return; }
+    if (!ket){ toast('Keterangan wajib diisi','warning'); return; }
+    const btn = $('#btn-stock-in'); const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Menyimpan…</span>';
+    try{
+      const { error } = await sb.rpc('atk_stock_in',{ p_item_id: itemId, p_jumlah: jumlah, p_keterangan: ket });
+      if (error) throw error;
+      toast('Barang masuk dicatat. Stok bertambah '+jumlah,'success');
+      $('#in-jumlah').value = 1;
+      $('#in-keterangan').value = '';
+      $('#in-item').value = '';
+      this.loadAtkStockInPage();
+    }catch(err){
+      console.error(err); toast('Gagal: '+(err.message||'unknown'),'error',5000);
+    }finally{ btn.disabled=false; btn.innerHTML = orig; }
+  },
+
+  async loadAtkMaster(){
+    if (!sb) return;
+    try{
+      await masterDataAtk.loadAll();
+      // Categories
+      const catBody = $('#atk-cat-table tbody');
+      const cats = masterDataAtk.categories;
+      if (!cats || cats.length === 0){
+        catBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted" style="padding:20px;">Belum ada kategori</td></tr>`;
+      } else {
+        catBody.innerHTML = cats.map(c => `<tr>
+          <td>${c.urutan}</td>
+          <td><b>${escapeHtml(c.nama)}</b></td>
+          <td>${c.aktif ? '<span class="chip tersedia">Aktif</span>' : '<span class="chip ditolak">Nonaktif</span>'}</td>
+          <td>
+            <button class="btn-icon-sm" onclick='admin.openAtkCatModal(${JSON.stringify(c).replace(/'/g,"&#39;")})' aria-label="Edit"><span class="material-symbols-rounded icon-sm">edit</span></button>
+            <button class="btn-icon-sm danger" onclick="admin.confirmDeleteAtkCat(${c.id})" aria-label="Hapus"><span class="material-symbols-rounded icon-sm">delete</span></button>
+          </td>
+        </tr>`).join('');
+      }
+      // Items
+      const locFilter = $('#atk-item-filter-loc');
+      if (locFilter && locFilter.options.length <= 1){
+        locFilter.innerHTML = '<option value="">Semua Lokasi</option>' +
+          masterData.activeLocations().map(l=>`<option value="${l.id}">${escapeHtml(l.nama)}</option>`).join('');
+      }
+      let items = masterDataAtk.items;
+      if (this.state.atkItemFilterLoc) items = items.filter(i => i.location_id == this.state.atkItemFilterLoc);
+      const itemBody = $('#atk-item-table tbody');
+      if (!items || items.length === 0){
+        itemBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding:20px;">Belum ada item</td></tr>`;
+      } else {
+        itemBody.innerHTML = items.map(i => `<tr>
+          <td><b>${escapeHtml(i.nama)}</b></td>
+          <td class="text-sm text-muted">${escapeHtml(i.brand||'—')}</td>
+          <td class="text-sm">${escapeHtml(i.atk_categories?.nama || '—')}</td>
+          <td class="text-sm">${escapeHtml(i.locations?.nama || '—')}</td>
+          <td class="text-sm">${escapeHtml(i.satuan)}</td>
+          <td><b>${fmtNumber(i.stok)}</b></td>
+          <td>${i.aktif ? '<span class="chip tersedia">Aktif</span>' : '<span class="chip ditolak">Nonaktif</span>'}</td>
+          <td>
+            <button class="btn-icon-sm" onclick='admin.openAtkItemModal(${JSON.stringify(i).replace(/'/g,"&#39;")})' aria-label="Edit"><span class="material-symbols-rounded icon-sm">edit</span></button>
+            <button class="btn-icon-sm danger" onclick="admin.confirmDeleteAtkItem(${i.id})" aria-label="Hapus"><span class="material-symbols-rounded icon-sm">delete</span></button>
+          </td>
+        </tr>`).join('');
+      }
+    }catch(err){ console.error('loadAtkMaster:',err); }
+  },
+
+  openAtkCatModal(c){
+    this.state.editingAtkCat = c;
+    $('#atk-cat-modal-title').textContent = c ? 'Edit Kategori ATK' : 'Tambah Kategori ATK';
+    $('#atk-c-nama').value = c?.nama || '';
+    $('#atk-c-urutan').value = c?.urutan ?? 0;
+    $('#atk-c-aktif').checked = c ? !!c.aktif : true;
+    ui.openModal('modal-atk-cat');
+  },
+
+  async saveAtkCat(){
+    const c = this.state.editingAtkCat;
+    const nama = $('#atk-c-nama').value.trim();
+    const urutan = parseInt($('#atk-c-urutan').value,10) || 0;
+    const aktif = $('#atk-c-aktif').checked;
+    if (!nama){ toast('Nama kategori wajib','warning'); return; }
+    const btn = $('#btn-save-atk-cat'); const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Menyimpan…</span>';
+    try{
+      const { error } = await sb.rpc('upsert_atk_category',{ p_id: c?.id ?? null, p_nama: nama, p_urutan: urutan, p_aktif: aktif });
+      if (error) throw error;
+      toast('Kategori disimpan','success');
+      ui.closeModal('modal-atk-cat');
+      await this.loadAtkMaster();
+    }catch(err){ console.error(err); toast('Gagal: '+(err.message||''),'error',5000);
+    }finally{ btn.disabled=false; btn.innerHTML = orig; }
+  },
+
+  confirmDeleteAtkCat(id){
+    const c = masterDataAtk.categories.find(x=>x.id == id); if (!c) return;
+    $('#confirm-title').textContent = 'Hapus Kategori ATK?';
+    $('#confirm-message').innerHTML = `Kategori <b>${escapeHtml(c.nama)}</b> akan dihapus permanen. Item ATK yang punya kategori ini akan di-set kategori kosong.`;
+    $('#confirm-warning').style.display = 'none';
+    this.state.pendingConfirm = async ()=>{
+      const { error } = await sb.rpc('delete_atk_category',{ p_id: id });
+      if (error) throw error;
+      toast('Kategori dihapus','success'); await this.loadAtkMaster();
+    };
+    ui.openModal('modal-confirm');
+  },
+
+  openAtkItemModal(i){
+    this.state.editingAtkItem = i;
+    $('#atk-item-modal-title').textContent = i ? 'Edit Item ATK' : 'Tambah Item ATK';
+    $('#atk-i-nama').value = i?.nama || '';
+    $('#atk-i-brand').value = i?.brand || '';
+    // Populate selects
+    $('#atk-i-cat').innerHTML = '<option value="">— Pilih kategori —</option>' +
+      masterDataAtk.categories.map(c=>`<option value="${c.id}" ${i?.category_id==c.id?'selected':''}>${escapeHtml(c.nama)}</option>`).join('');
+    $('#atk-i-loc').innerHTML = '<option value="">— Pilih lokasi —</option>' +
+      masterData.activeLocations().map(l=>`<option value="${l.id}" ${i?.location_id==l.id?'selected':''}>${escapeHtml(l.nama)}</option>`).join('');
+    $('#atk-i-satuan').value = i?.satuan || 'Pcs';
+    $('#atk-i-stok').value = i?.stok ?? 0;
+    $('#atk-i-stok').disabled = !!i;
+    $('#atk-i-stok-note').textContent = i ? 'Untuk ubah stok, gunakan menu Barang Masuk atau Edit Stok di tabel.' : 'Stok awal saat tambah baru';
+    $('#atk-i-min').value = i?.minimum ?? 0;
+    $('#atk-i-aktif').checked = i ? !!i.aktif : true;
+    ui.openModal('modal-atk-item');
+  },
+
+  async saveAtkItem(){
+    const i = this.state.editingAtkItem;
+    const nama = $('#atk-i-nama').value.trim();
+    const brand = $('#atk-i-brand').value.trim();
+    const cat   = $('#atk-i-cat').value || null;
+    const loc   = $('#atk-i-loc').value;
+    const satuan = $('#atk-i-satuan').value;
+    const stok = parseInt($('#atk-i-stok').value,10) || 0;
+    const minimum = parseInt($('#atk-i-min').value,10) || 0;
+    const aktif = $('#atk-i-aktif').checked;
+    if (!nama){ toast('Nama wajib','warning'); return; }
+    if (!loc){ toast('Lokasi wajib dipilih','warning'); return; }
+
+    const btn = $('#btn-save-atk-item'); const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Menyimpan…</span>';
+    try{
+      const { error } = await sb.rpc('upsert_atk_item',{
+        p_id: i?.id ?? null, p_category_id: cat, p_location_id: loc,
+        p_nama: nama, p_brand: brand, p_satuan: satuan,
+        p_stok: stok, p_minimum: minimum, p_aktif: aktif
+      });
+      if (error) throw error;
+      toast('Item disimpan','success');
+      ui.closeModal('modal-atk-item');
+      await masterDataAtk.loadAll();
+      const v = this.state.currentView;
+      if (v === 'atk-master') this.loadAtkMaster();
+      else if (v === 'atk-stock') this.loadAtkStock();
+    }catch(err){ console.error(err); toast('Gagal: '+(err.message||''),'error',5000);
+    }finally{ btn.disabled=false; btn.innerHTML = orig; }
+  },
+
+  confirmDeleteAtkItem(id){
+    const it = masterDataAtk.items.find(x=>x.id == id); if (!it) return;
+    $('#confirm-title').textContent = 'Hapus Item ATK?';
+    $('#confirm-message').innerHTML = `Item <b>${escapeHtml(it.nama)}</b> di lokasi <b>${escapeHtml(it.locations?.nama||'?')}</b> akan dihapus permanen. Riwayat mutasinya tetap tersimpan untuk audit.`;
+    $('#confirm-warning').style.display = 'none';
+    this.state.pendingConfirm = async ()=>{
+      const { error } = await sb.rpc('delete_atk_item',{ p_id: id });
+      if (error) throw error;
+      toast('Item dihapus','success'); await this.loadAtkMaster();
+    };
+    ui.openModal('modal-confirm');
   }
 };
 
@@ -2652,46 +3983,91 @@ document.addEventListener('click', e=>{
 const masterData = {
   departments:[],
   divisions:[],
+  locations:[],
   async loadAll(){
     if (!sb) return;
     try{
-      const [{data:deps,error:e1},{data:divs,error:e2}] = await Promise.all([
+      const [{data:deps,error:e1},{data:divs,error:e2},{data:locs,error:e3}] = await Promise.all([
         sb.from('departments').select('*').order('urutan',{ascending:true}).order('nama',{ascending:true}),
-        sb.from('divisions').select('*').order('urutan',{ascending:true}).order('nama',{ascending:true})
+        sb.from('divisions').select('*').order('urutan',{ascending:true}).order('nama',{ascending:true}),
+        sb.from('locations').select('*').order('urutan',{ascending:true}).order('nama',{ascending:true})
       ]);
       if (e1) throw e1; if (e2) throw e2;
+      // locations table might not exist yet on first load — silently fallback
       this.departments = deps || [];
       this.divisions   = divs || [];
+      this.locations   = e3 ? [] : (locs || []);
     }catch(err){
       console.warn('masterData load failed:', err);
-      this.departments = []; this.divisions = [];
+      this.departments = []; this.divisions = []; this.locations = [];
     }
   },
   activeDepts(){ return this.departments.filter(d=>d.aktif); },
   activeDivsOf(deptId){ return this.divisions.filter(d=>d.aktif && d.department_id == deptId); },
   divsOf(deptId){ return this.divisions.filter(d=>d.department_id == deptId); },
+  activeLocations(){ return this.locations.filter(l=>l.aktif); },
   byId(arr,id){ return arr.find(x=>x.id == id); },
 
   fillFormSelects(){
-    const dept = $('#f-dept'), divisi = $('#f-divisi');
-    if (!dept || !divisi) return;
-    const active = this.activeDepts();
-    if (active.length === 0){
-      dept.innerHTML = '<option value="">— Belum ada departemen, hubungi admin —</option>';
-      dept.disabled = true;
-      divisi.innerHTML = '<option value="">— —</option>';
-      divisi.disabled = true;
-      return;
+    // Meterai form
+    const dept = $('#f-dept'), divisi = $('#f-divisi'), lokasi = $('#f-lokasi');
+    if (dept){
+      const active = this.activeDepts();
+      if (active.length === 0){
+        dept.innerHTML = '<option value="">— Belum ada departemen, hubungi admin —</option>';
+        dept.disabled = true;
+        if (divisi){ divisi.innerHTML = '<option value="">— —</option>'; divisi.disabled = true; }
+      } else {
+        dept.disabled = false;
+        dept.innerHTML = '<option value="">— Pilih Departemen —</option>' +
+          active.map(d=>`<option value="${escapeHtml(d.nama)}" data-id="${d.id}">${escapeHtml(d.nama)}</option>`).join('');
+        if (divisi){
+          divisi.innerHTML = '<option value="">— Pilih departemen dulu —</option>';
+          divisi.disabled = true;
+        }
+      }
     }
-    dept.disabled = false;
-    dept.innerHTML = '<option value="">— Pilih Departemen —</option>' +
-      active.map(d=>`<option value="${escapeHtml(d.nama)}" data-id="${d.id}">${escapeHtml(d.nama)}</option>`).join('');
-    divisi.innerHTML = '<option value="">— Pilih departemen dulu —</option>';
-    divisi.disabled = true;
+    if (lokasi){
+      const locs = this.activeLocations();
+      if (locs.length === 0){
+        // fallback ke 3 lokasi default kalau tabel belum ada
+        lokasi.innerHTML = '<option value="">— Pilih Lokasi —</option>' +
+          ['Wisma Nusantara','Transport Hub','Depo Lebak Bulus']
+            .map(n=>`<option value="${n}">${n}</option>`).join('');
+      } else {
+        lokasi.innerHTML = '<option value="">— Pilih Lokasi —</option>' +
+          locs.map(l=>`<option value="${escapeHtml(l.nama)}">${escapeHtml(l.nama)}</option>`).join('');
+      }
+    }
+    // ATK form (sama, prefix 'fa-')
+    const adept = $('#fa-dept'), adivisi = $('#fa-divisi'), aloc = $('#fa-lokasi');
+    if (adept){
+      const active = this.activeDepts();
+      if (active.length === 0){
+        adept.innerHTML = '<option value="">— Belum ada departemen —</option>'; adept.disabled = true;
+        if (adivisi){ adivisi.innerHTML = '<option value="">— —</option>'; adivisi.disabled = true; }
+      } else {
+        adept.disabled = false;
+        adept.innerHTML = '<option value="">— Pilih Departemen —</option>' +
+          active.map(d=>`<option value="${escapeHtml(d.nama)}" data-id="${d.id}">${escapeHtml(d.nama)}</option>`).join('');
+        if (adivisi){
+          adivisi.innerHTML = '<option value="">— Pilih departemen dulu —</option>';
+          adivisi.disabled = true;
+        }
+      }
+    }
+    if (aloc){
+      const locs = this.activeLocations();
+      const list = locs.length ? locs.map(l=>l.nama) : ['Wisma Nusantara','Transport Hub','Depo Lebak Bulus'];
+      aloc.innerHTML = '<option value="">— Pilih Lokasi —</option>' +
+        list.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    }
   },
 
-  onDeptChange(){
-    const dept = $('#f-dept'); const divisi = $('#f-divisi');
+  onDeptChange(prefix='f'){
+    const dept = $(`#${prefix}-dept`);
+    const divisi = $(`#${prefix}-divisi`);
+    if (!dept || !divisi) return;
     const opt = dept.options[dept.selectedIndex];
     const deptId = opt?.dataset?.id;
     if (!deptId){
@@ -2708,15 +4084,227 @@ const masterData = {
       divs.map(d=>`<option value="${escapeHtml(d.nama)}">${escapeHtml(d.nama)}</option>`).join('');
   }
 };
+
+/* ============================================================
+   ATK MASTER (categories + items) untuk form publik
+   ============================================================ */
+const masterDataAtk = {
+  categories: [],
+  items: [],
+  formItems: [],     // state form (bisa multi-item)
+
+  async loadAll(){
+    if (!sb) return;
+    try{
+      const [{data:cats,error:e1},{data:items,error:e2}] = await Promise.all([
+        sb.from('atk_categories').select('*').order('urutan',{ascending:true}).order('nama',{ascending:true}),
+        sb.from('atk_items').select('*,locations(nama),atk_categories(nama)').order('nama',{ascending:true})
+      ]);
+      this.categories = e1 ? [] : (cats || []);
+      this.items      = e2 ? [] : (items || []);
+    }catch(err){
+      console.warn('masterDataAtk load failed:', err);
+      this.categories = []; this.items = [];
+    }
+  },
+
+  itemsForLocation(lokasiNama){
+    if (!lokasiNama) return [];
+    return this.items.filter(i => i.aktif && i.locations?.nama === lokasiNama);
+  },
+
+  initForm(){
+    if (this.formItems.length === 0) this.addItem();
+    this.renderForm();
+  },
+
+  addItem(){
+    this.formItems.push({ uid: Date.now() + Math.random(), item_id:'', nama:'', brand:'', satuan:'Pcs', jumlah:1 });
+    this.renderForm();
+  },
+
+  removeItem(uid){
+    this.formItems = this.formItems.filter(i => i.uid !== uid);
+    if (this.formItems.length === 0) this.addItem(); else this.renderForm();
+  },
+
+  updateItem(uid, field, val){
+    const i = this.formItems.find(x => x.uid === uid); if (!i) return;
+    i[field] = val;
+    if (field === 'item_id'){
+      const item = this.items.find(x => x.id == val);
+      if (item){
+        i.nama = item.nama; i.brand = item.brand || ''; i.satuan = item.satuan;
+      }
+    }
+    this.renderForm();
+  },
+
+  renderForm(){
+    const wrap = $('#fa-items'); if (!wrap) return;
+    const lokasi = $('#fa-lokasi')?.value;
+    const opts = this.itemsForLocation(lokasi);
+    wrap.innerHTML = this.formItems.map(it => `
+      <div class="atk-item-row" style="display:grid;grid-template-columns:2fr .8fr 1.2fr 36px;gap:8px;align-items:end;background:var(--c-bg);padding:10px;border-radius:8px;">
+        <div class="field" style="margin:0;">
+          <label style="font-size:11px;">Barang</label>
+          <select class="select" onchange="masterDataAtk.updateItem(${it.uid},'item_id',this.value)">
+            <option value="">${lokasi ? '— Pilih barang —' : '— Pilih lokasi dulu —'}</option>
+            ${opts.map(o => `<option value="${o.id}" ${it.item_id == o.id ? 'selected':''}>${escapeHtml(o.nama)}${o.brand ? ' · ' + escapeHtml(o.brand) : ''} (Stok: ${o.stok})</option>`).join('')}
+          </select>
+        </div>
+        <div class="field" style="margin:0;">
+          <label style="font-size:11px;">Jumlah</label>
+          <input type="number" class="input" min="1" max="9999" value="${it.jumlah}" onchange="masterDataAtk.updateItem(${it.uid},'jumlah',parseInt(this.value)||1)" />
+        </div>
+        <div class="field" style="margin:0;">
+          <label style="font-size:11px;">Satuan</label>
+          <input type="text" class="input readonly" value="${escapeHtml(it.satuan||'-')}" readonly />
+        </div>
+        <button type="button" class="btn-icon-sm danger" onclick="masterDataAtk.removeItem(${it.uid})" aria-label="Hapus" style="height:38px;">
+          <span class="material-symbols-rounded icon-sm">close</span>
+        </button>
+      </div>
+    `).join('');
+  }
+};
+
+async function previewKodeAtk(){
+  if (!sb){ const el=$('#fa-kode'); if(el) el.value = 'ATK-XXXXXXXXX###'; return; }
+  try{
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2,'0');
+    const mm = String(today.getMonth()+1).padStart(2,'0');
+    const yyyy = today.getFullYear();
+    const dateStr = `${dd}${mm}${yyyy}`;
+    const { data } = await sb.from('atk_requests').select('kode_permintaan').like('kode_permintaan',`ATK-${dateStr}%`);
+    let max = 0;
+    (data||[]).forEach(r=>{ const n = parseInt(r.kode_permintaan.slice(-3),10); if (!isNaN(n) && n > max) max = n; });
+    const el = $('#fa-kode');
+    if (el) el.value = `ATK-${dateStr}${String(max+1).padStart(3,'0')}`;
+  }catch{
+    const el = $('#fa-kode'); if (el) el.value = 'ATK-(akan dibuat saat submit)';
+  }
+}
+
+/* ATK Form bindings */
+function bindAtkForm(){
+  const dept = $('#fa-dept'); if (!dept) return;
+  dept.addEventListener('change', () => masterData.onDeptChange('fa'));
+  $('#fa-lokasi').addEventListener('change', () => masterDataAtk.renderForm());
+
+  $('#form-atk').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (notSupabase()) return;
+    const fields = [
+      ['#fa-nama','Nama Pemohon'],['#fa-dept','Departemen'],['#fa-divisi','Divisi'],
+      ['#fa-lokasi','Lokasi Kerja'],['#fa-tujuan','Tujuan Penggunaan']
+    ];
+    for (const [sel,label] of fields){
+      const v = $(sel).value.trim();
+      if (!v){ $(sel).focus(); toast(`${label} wajib diisi`,'warning'); return; }
+    }
+    if (!$('#fa-confirm').checked){
+      toast('Mohon centang pernyataan konfirmasi','warning'); return;
+    }
+    const validItems = masterDataAtk.formItems.filter(i => i.item_id && i.jumlah > 0);
+    if (validItems.length === 0){ toast('Minimal 1 barang harus dipilih','warning'); return; }
+
+    const itemsPayload = validItems.map(i => ({
+      item_id: i.item_id, nama: i.nama, brand: i.brand, satuan: i.satuan, jumlah: i.jumlah
+    }));
+
+    const btn = $('#btn-submit-atk'); const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-inline"></span> <span>Memproses…</span>';
+    try{
+      const { data, error } = await sb.rpc('create_atk_request',{
+        p_nama_pemohon:  $('#fa-nama').value.trim(),
+        p_departemen:    $('#fa-dept').value.trim(),
+        p_divisi:        $('#fa-divisi').value.trim(),
+        p_lokasi_kerja:  $('#fa-lokasi').value,
+        p_items:         itemsPayload,
+        p_tujuan:        $('#fa-tujuan').value.trim()
+      });
+      if (error) throw error;
+      const kode = (Array.isArray(data) ? data[0]?.kode : data?.kode) || 'ATK-???';
+      $('#success-kode').textContent = kode;
+      ui.openModal('modal-success');
+      e.target.reset();
+      masterDataAtk.formItems = []; masterDataAtk.addItem();
+      masterData.fillFormSelects();
+      previewKodeAtk();
+      loadAtkLandingStats();
+    }catch(err){
+      console.error(err);
+      toast('Gagal menyimpan: ' + (err.message||'unknown'), 'error', 5000);
+    }finally{
+      btn.disabled = false; btn.innerHTML = orig;
+    }
+  });
+}
+
+/* ATK Landing Stats */
+let atkPubChart = null;
+async function loadAtkLandingStats(){
+  if (!sb) return;
+  try{
+    const { data: sum } = await sb.from('v_atk_dashboard').select('*').single();
+    if (sum){
+      $('#atk-pub-keluar').textContent  = fmtNumber(sum.total_atk_keluar);
+      $('#atk-pub-bulan').textContent   = fmtNumber(sum.permintaan_bulan_ini);
+      $('#atk-pub-bulan-label').textContent = formatBulan(currentBulan());
+      $('#atk-pub-pending').textContent = fmtNumber(sum.total_pending);
+      $('#atk-pub-items').textContent   = fmtNumber(sum.total_items);
+    }
+    // Bulan selector
+    const sel = $('#atk-pub-bulan-sel');
+    if (sel && sel.options.length === 0){
+      const months = []; const today = new Date();
+      for (let i=0;i<6;i++){
+        const d = new Date(today.getFullYear(), today.getMonth()-i, 1);
+        const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        months.push({k,label:formatBulan(k)});
+      }
+      sel.innerHTML = months.map(m=>`<option value="${m.k}">${m.label}</option>`).join('');
+      sel.addEventListener('change', () => loadAtkChart(sel.value));
+    }
+    loadAtkChart(sel?.value || currentBulan());
+  }catch(err){ console.warn('loadAtkLandingStats:', err); }
+}
+
+async function loadAtkChart(bulan){
+  if (!sb) return;
+  const { data } = await sb.from('v_atk_monthly_stats').select('*').eq('bulan',bulan);
+  const rows = (data||[]).sort((a,b)=>b.total_barang - a.total_barang).slice(0,10);
+  const ctx = $('#atk-pub-chart')?.getContext('2d'); if (!ctx) return;
+  if (atkPubChart) atkPubChart.destroy();
+  if (rows.length === 0){
+    atkPubChart = new Chart(ctx, { type:'bar', data:{labels:['Tidak ada data'],datasets:[{data:[0],backgroundColor:'#E2E8F0'}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+    return;
+  }
+  const grad = ctx.createLinearGradient(0,0,0,300);
+  grad.addColorStop(0,'#0F4C81'); grad.addColorStop(1,'#00A651');
+  atkPubChart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: rows.map(r=>r.departemen), datasets:[{ label:'Total Barang', data: rows.map(r=>r.total_barang), backgroundColor: grad, borderRadius:6 }]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}} }
+  });
+}
 async function boot(){
   // hide loading
   setTimeout(()=>{ $('#loading')?.classList.add('hide'); setTimeout(()=>$('#loading')?.remove(),300); }, 250);
 
   await auth.init();
   await masterData.loadAll();
+  await masterDataAtk.loadAll();
   masterData.fillFormSelects();
+  masterDataAtk.initForm();
+  bindAtkForm();
   previewKode();
+  previewKodeAtk();
   loadLandingStats();
+  loadAtkLandingStats();
 
   // If admin already logged in (from previous session), allow direct access via hash
   if (location.hash === '#admin' && auth.user){
